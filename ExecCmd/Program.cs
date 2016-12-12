@@ -57,8 +57,38 @@ namespace ExecCmd
             Xb.Util.Out("Row 16, ADDRESS = {0}", resultTable.Rows[16].Item("ADDRESS"));
 
 
+            //Query<T>
+            sql = " SELECT "
+                + "      ZIPCD "
+                + "     ,ADDRESS "
+                + "     ,ADD_KANA "
+                + "     ,PREF "
+                + "     ,YEAR "
+                + " FROM "
+                + "     M_ZIP "
+                + " WHERE "
+                + "     ADDRESS LIKE '%田県%' ";
+            var zips = db.Query<Zip>(sql);
+            Xb.Util.Out("RowCount = {0}", zips.Length);
+            Xb.Util.Out("Row 38, ZIPCD = {0}, ADDRESS = {1}, ADD_KANA = {2}, PREF = {3}, YEAR = {4}"
+                            , zips[38].ZIPCD
+                            , zips[38].ADDRESS
+                            , zips[38].ADD_KANA
+                            , zips[38].PREF
+                            , zips[38].YEAR);
+
+
             db.Dispose();
             Xb.Util.Out("Disconnected.");
+        }
+
+        public class Zip
+        {
+            public string ZIPCD { get; set; }
+            public string ADDRESS { get; set; }
+            public string ADD_KANA { get; set; }
+            public string PREF { get; set; }
+            public int YEAR { get; set; }
         }
     }
 }

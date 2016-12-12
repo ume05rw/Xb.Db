@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -122,6 +123,47 @@ namespace Xb.Db
             {
                 Xb.Util.Out(ex);
                 throw new InvalidOperationException("Xb.Db.Query fail \r\n" + ex.Message + "\r\n" + sql);
+            }
+        }
+
+
+        public T[] Query<T>(string sql, DbParameter[] parameters = null)
+        {
+            try
+            {
+                var result = new List<T>();
+                var props = typeof(T).GetRuntimeProperties().ToArray();
+                var reader = this.GetReader(sql);
+
+                var done = false;
+                var matchProps = new List<PropertyInfo>();
+
+                while (reader.Read())
+                {
+                    if (!done)
+                    {
+                        var columnNames = new List<string>();
+                        for (var i = 0; i < reader.FieldCount; i++)
+                            columnNames.Add(reader.GetName(i));
+
+                        matchProps.AddRange(props.Where(prop => columnNames.Contains(prop.Name)));
+                        done = true;
+                    }
+
+                    var row = Activator.CreateInstance<T>();
+                    foreach (var property in matchProps)
+                        property.SetValue(row, reader[property.Name]);
+
+                    result.Add(row);
+                }
+
+                reader.Dispose();
+                return result.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Xb.Util.Out(ex);
+                throw new InvalidOperationException("Xb.Db.Query<T> fail \r\n" + ex.Message + "\r\n" + sql);
             }
         }
 
