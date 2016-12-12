@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Xb\Db\DbBase.cs" />
+    <Compile Include="Xb\Db\MsSql.cs" />
     <Compile Include="Xb\Db\ResultRow.cs" />
     <Compile Include="Xb\Db\ResultTable.cs" />
   </ItemGroup>

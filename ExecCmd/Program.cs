@@ -15,7 +15,7 @@ namespace ExecCmd
             Xb.Util.Out("Start");
 
             //Execute
-            var db = new Xb.Db.DbBase("DBSPKG", "sa", "sa", "localhost");
+            var db = new Xb.Db.MsSql("DBSPKG", "sa", "sa", "localhost");
             Xb.Util.Out("Connected.");
 
             var sql = " UPDATE "
