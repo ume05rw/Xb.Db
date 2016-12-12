@@ -57,6 +57,30 @@ namespace Xb.Db
             }
         }
 
+
+        public int Execute(string sql)
+        {
+            var command = new System.Data.SqlClient.SqlCommand
+            {
+                Connection = (System.Data.SqlClient.SqlConnection)this._connection
+            };
+
+            try
+            {
+                command.CommandText = sql;
+                var result = command.ExecuteNonQuery();
+                command.Dispose();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Xb.Util.Out(ex);
+                throw new InvalidOperationException("Xb.Db.Execute fail \r\n" + ex.Message + "\r\n" + sql);
+            }
+        }
+
+
         #region IDisposable Support
         private bool disposedValue = false;
 
