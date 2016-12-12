@@ -90,13 +90,20 @@ namespace Xb.Db
         }
 
 
-        public DbDataReader GetReader(string sql)
+        public DbDataReader GetReader(string sql, DbParameter[] parameters = null)
         {
             var command = this.GetCommand();
 
             try
             {
                 command.CommandText = sql;
+
+                if (parameters != null
+                    && parameters.Length > 0)
+                {
+                    command.Parameters.AddRange(parameters);
+                }
+
                 var result = command.ExecuteReader(CommandBehavior.SingleResult);
                 command.Dispose();
 
@@ -110,11 +117,11 @@ namespace Xb.Db
         }
 
 
-        public ResultTable Query(string sql)
+        public ResultTable Query(string sql, DbParameter[] parameters = null)
         {
             try
             {
-                var reader = this.GetReader(sql);
+                var reader = this.GetReader(sql, parameters);
                 var result = new ResultTable(reader);
                 reader.Dispose();
                 return result;
@@ -133,7 +140,7 @@ namespace Xb.Db
             {
                 var result = new List<T>();
                 var props = typeof(T).GetRuntimeProperties().ToArray();
-                var reader = this.GetReader(sql);
+                var reader = this.GetReader(sql, parameters);
 
                 var done = false;
                 var matchProps = new List<PropertyInfo>();
