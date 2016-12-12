@@ -109,6 +109,23 @@ namespace Xb.Db
         }
 
 
+        public ResultTable Query(string sql)
+        {
+            try
+            {
+                var reader = this.GetReader(sql);
+                var result = new ResultTable(reader);
+                reader.Dispose();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Xb.Util.Out(ex);
+                throw new InvalidOperationException("Xb.Db.Query fail \r\n" + ex.Message + "\r\n" + sql);
+            }
+        }
+
+
         #region IDisposable Support
         private bool disposedValue = false;
 
