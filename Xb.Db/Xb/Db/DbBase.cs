@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,12 +60,18 @@ namespace Xb.Db
         }
 
 
-        public int Execute(string sql)
+        private DbCommand GetCommand()
         {
-            var command = new System.Data.SqlClient.SqlCommand
+            return new System.Data.SqlClient.SqlCommand
             {
                 Connection = (System.Data.SqlClient.SqlConnection)this._connection
             };
+        }
+
+
+        public int Execute(string sql)
+        {
+            var command = this.GetCommand();
 
             try
             {
@@ -77,6 +85,26 @@ namespace Xb.Db
             {
                 Xb.Util.Out(ex);
                 throw new InvalidOperationException("Xb.Db.Execute fail \r\n" + ex.Message + "\r\n" + sql);
+            }
+        }
+
+
+        public DbDataReader GetReader(string sql)
+        {
+            var command = this.GetCommand();
+
+            try
+            {
+                command.CommandText = sql;
+                var result = command.ExecuteReader(CommandBehavior.SingleResult);
+                command.Dispose();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Xb.Util.Out(ex);
+                throw new InvalidOperationException("Xb.Db.GetReader fail \r\n" + ex.Message + "\r\n" + sql);
             }
         }
 
