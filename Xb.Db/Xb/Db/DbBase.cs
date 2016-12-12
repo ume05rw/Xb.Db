@@ -39,7 +39,7 @@ namespace Xb.Db
 
         private void Open()
         {
-            string connectionString
+            var connectionString
                 = string.Format("server={0};user id={1}; password={2}; database={3}; pooling=false",
                     this._address,
                     this._user,
@@ -61,18 +61,26 @@ namespace Xb.Db
         }
 
 
-        private DbCommand GetCommand()
+        private DbCommand GetCommand(DbParameter[] parameters = null)
         {
-            return new System.Data.SqlClient.SqlCommand
+            var result =  new System.Data.SqlClient.SqlCommand
             {
                 Connection = (System.Data.SqlClient.SqlConnection)this._connection
             };
+
+            if (parameters != null
+                && parameters.Length > 0)
+            {
+                result.Parameters.AddRange(parameters);
+            }
+
+            return result;
         }
 
 
-        public int Execute(string sql)
+        public int Execute(string sql, DbParameter[] parameters = null)
         {
-            var command = this.GetCommand();
+            var command = this.GetCommand(parameters);
 
             try
             {
@@ -92,18 +100,11 @@ namespace Xb.Db
 
         public DbDataReader GetReader(string sql, DbParameter[] parameters = null)
         {
-            var command = this.GetCommand();
+            var command = this.GetCommand(parameters);
 
             try
             {
                 command.CommandText = sql;
-
-                if (parameters != null
-                    && parameters.Length > 0)
-                {
-                    command.Parameters.AddRange(parameters);
-                }
-
                 var result = command.ExecuteReader(CommandBehavior.SingleResult);
                 command.Dispose();
 
