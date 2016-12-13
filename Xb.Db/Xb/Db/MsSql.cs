@@ -208,7 +208,7 @@ namespace Xb.Db
 
             var param = new SqlParameter();
             param.Direction = ParameterDirection.Input;
-            param.ParameterName = name ?? "";
+            param.ParameterName = name;
             param.Value = value;
             param.SqlDbType = type;
             

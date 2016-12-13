@@ -217,11 +217,11 @@ namespace Xb.Db
         /// <param name="additionalString"></param>
         /// <param name="encoding"></param>
         protected DbBase(string name
-                        ,string user = ""
-                        ,string password = ""
-                        ,string address = ""
-                        ,string additionalString = ""
-                        ,Encoding encoding = null)
+            , string user = ""
+            , string password = ""
+            , string address = ""
+            , string additionalString = ""
+            , Encoding encoding = null)
         {
             this._address = address;
             this._name = name;
@@ -498,25 +498,25 @@ namespace Xb.Db
         /// </summary>
         /// <returns></returns>
         /// <remarks></remarks>
-        public virtual bool BeginTransaction()
+        public virtual void BeginTransaction()
         {
             try
             {
-                //now on transaction, return true. Do NOT nesting.
+                //now on transaction, exit. Do NOT nesting.
                 //トランザクションの入れ子を避ける。
                 if (this._isInTransaction)
-                    return true;
+                    return;
 
                 //begin transaction
                 this.Execute(this.TranCmdBegin);
 
                 this._isInTransaction = true;
-                return true;
             }
             catch (Exception ex)
             {
+                this.ResetTransaction();
                 Xb.Util.Out(ex);
-                return false;
+                throw ex;
             }
         }
 
@@ -527,20 +527,23 @@ namespace Xb.Db
         /// </summary>
         /// <returns></returns>
         /// <remarks></remarks>
-        public virtual bool CommitTransaction()
+        public virtual void CommitTransaction()
         {
             try
             {
+                if (!this._isInTransaction)
+                    throw new InvalidOperationException("transanction not exist");
+
                 //Commit transaction
                 this.Execute(this.TranCmdCommit);
 
                 this._isInTransaction = false;
-                return true;
             }
             catch (Exception ex)
             {
+                this.ResetTransaction();
                 Xb.Util.Out(ex);
-                return false;
+                throw ex;
             }
         }
 
@@ -551,21 +554,44 @@ namespace Xb.Db
         /// </summary>
         /// <returns></returns>
         /// <remarks></remarks>
-        public virtual bool RollbackTransaction()
+        public virtual void RollbackTransaction()
         {
             try
             {
+                if (!this._isInTransaction)
+                    throw new InvalidOperationException("transanction not exist");
+
                 //Rollback transaction
                 this.Execute(this.TranCmdRollback);
 
                 this._isInTransaction = false;
-                return true;
             }
             catch (Exception ex)
             {
+                this.ResetTransaction();
                 Xb.Util.Out(ex);
-                return false;
+                throw ex;
             }
+        }
+
+
+        /// <summary>
+        /// Reset transaction
+        /// トランザクションを初期化する
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        protected virtual void ResetTransaction()
+        {
+            try
+            {
+                Xb.Util.Out("Xb.Db.DbBase ResetTransaction");
+                this.Execute(this.TranCmdRollback);
+            }
+            catch (Exception)
+            {
+            }
+            this._isInTransaction = false;
         }
 
 
