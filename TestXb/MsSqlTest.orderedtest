@@ -1,3 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<OrderedTest name="mssqltest" storage="c:\users\ikaruga\documents\visual studio 2015\projects\0_predev.xb\xb.db\test.xb\mssqltest.orderedtest" id="6122c77c-11d9-4a47-a35c-57bdb5e23675" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<OrderedTest name="mssqltest" storage="c:\users\ikaruga\documents\visual studio 2015\projects\0_predev.xb\xb.db\testxb\mssqltest.orderedtest" id="6122c77c-11d9-4a47-a35c-57bdb5e23675" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <TestLinks>
+    <TestLink id="af4e0e05-4325-103f-920a-9d238730ea4f" name="ConstructorTest" storage="bin\debug\testxb.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="d497c970-e4c5-5b92-fda0-95433ccd8e28" name="QuoteTest" storage="bin\debug\testxb.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  </TestLinks>
 </OrderedTest>

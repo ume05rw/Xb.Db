@@ -49,6 +49,9 @@ namespace TestXb.Db
 
             this.Exec($"USE {NameTarget}");
 
+            var insertTpl = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME) VALUES ({1}, {2}, {3}, {4});";
+
+
             sql = " CREATE TABLE Test( " +
                   "     COL_STR varchar(10) NOT NULL, " +
                   "     COL_DEC decimal(5,3) NULL," +
@@ -56,6 +59,12 @@ namespace TestXb.Db
                   "     COL_DATETIME DateTime NULL " +
                   " ) ON [PRIMARY]";
             this.Exec(sql);
+            this.Exec(string.Format(insertTpl, "Test", "'ABC'", 1, 1, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test", "'ABC'", 1, 1, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test", "'ABC'", 1, 1, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test", "'BB'", 12.345, 12345, "'2016-12-13'"));
+            this.Exec(string.Format(insertTpl, "Test", "'CC'", 12.345, 12345, "'2016-12-13'"));
+            this.Exec(string.Format(insertTpl, "Test", "'KEY'", 0, "NULL", "'2000-12-31'"));
 
             sql = " CREATE TABLE Test2( " +
                   "     COL_STR varchar(10) NOT NULL, " +
@@ -65,6 +74,10 @@ namespace TestXb.Db
                   " CONSTRAINT [PK_Test2] PRIMARY KEY CLUSTERED (COL_STR ASC) " +
                   " ) ON [PRIMARY]";
             this.Exec(sql);
+            this.Exec(string.Format(insertTpl, "Test2", "'ABC'", 1, 1, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test2", "'BB'", 12.345, 12345, "'2016-12-13'"));
+            this.Exec(string.Format(insertTpl, "Test2", "'CC'", 12.345, 12345, "'2016-12-13'"));
+            this.Exec(string.Format(insertTpl, "Test2", "'KEY'", 0, "NULL", "'2000-12-31'"));
 
             sql = " CREATE TABLE Test3( " +
                   "     COL_STR varchar(10) NOT NULL, " +
@@ -74,6 +87,16 @@ namespace TestXb.Db
                   " CONSTRAINT [PK_Test3] PRIMARY KEY CLUSTERED (COL_STR ASC, COL_INT ASC) " +
                   " ) ON [PRIMARY]";
             this.Exec(sql);
+            this.Exec(string.Format(insertTpl, "Test3", "'ABC'", 1, 1, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test3", "'ABC'", 1, 2, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test3", "'ABC'", 1, 3, "'2001-01-01'"));
+            this.Exec(string.Format(insertTpl, "Test3", "'BB'", 12.345, 12345, "'2016-12-13'"));
+            this.Exec(string.Format(insertTpl, "Test3", "'CC'", 12.345, 12345, "'2016-12-13'"));
+            this.Exec(string.Format(insertTpl, "Test3", "'KEY'", "NULL", 0, "'2000-12-31'"));
+
+
+
+
 
             this.Out("MsSqlTestBase.Constructor End.");
         }

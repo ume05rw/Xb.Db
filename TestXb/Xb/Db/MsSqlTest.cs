@@ -13,7 +13,7 @@ namespace TestXb
     public class MsSqlTest : MsSqlBase
     {
         [TestMethod()]
-        public void CreateTest()
+        public void ConstructorTest()
         {
             this.Out("CreateTest Start.");
             Xb.Db.MsSql db;
@@ -40,6 +40,33 @@ namespace TestXb
             db.Dispose();
 
             this.Out("CreateTest End.");
+        }
+
+        [TestMethod()]
+        public void QuoteTest()
+        {
+            this.Out("QuoteTest Start.");
+            Xb.Db.MsSql db;
+
+            try
+            {
+                db = new Xb.Db.MsSql("MsSqlTests", "sa", "sa", "localhost", true);
+            }
+            catch (Exception ex)
+            {
+                Xb.Util.Out(ex);
+                throw ex;
+            }
+
+            Assert.AreEqual("'hello'", db.Quote("hello"));
+            Assert.AreEqual("'''hello'''", db.Quote("'hello'"));
+            Assert.AreEqual("'hel''lo'", db.Quote("hel'lo"));
+
+            
+            //Assert.AreEqual(3, db.Models.Count);
+            db.Dispose();
+
+            this.Out("QuoteTest End.");
         }
     }
 }
