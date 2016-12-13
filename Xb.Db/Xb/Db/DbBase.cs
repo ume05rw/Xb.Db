@@ -420,6 +420,59 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Get 1 row matched
+        /// 条件に合致した最初の行を返す
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="whereString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual ResultRow Find(string tableName, string whereString)
+        {
+            if (whereString == null)
+                whereString = "";
+
+            var sql = string.Format(this.SqlFind, tableName, whereString);
+            var rt = this.Query(sql);
+
+            //No-Data -> Nothing
+            if (rt == null || rt.RowCount <= 0)
+                return null;
+
+            //return first row
+            return rt.Rows[0];
+        }
+
+
+        /// <summary>
+        /// Get all rows matched
+        /// 条件に合致した全行データを返す。
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="whereString"></param>
+        /// <param name="orderString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual ResultTable FindAll(string tableName
+                                         , string whereString = null
+                                         , string orderString = null)
+        {
+            whereString = whereString ?? "";
+            orderString = orderString ?? "";
+
+            var sql = $" SELECT * FROM {tableName} ";
+
+            if (!string.IsNullOrEmpty(whereString))
+                sql += $" WHERE {whereString}";
+
+            if (!string.IsNullOrEmpty(orderString))
+                sql += $" ORDER BY {orderString}";
+
+            return this.Query(sql);
+        }
+
+
+        /// <summary>
         /// Execute Select query, Get Xb.Db.ResultTable
         /// SELECTクエリを実行し、結果を Xb.Db.ResultTable で返す
         /// </summary>

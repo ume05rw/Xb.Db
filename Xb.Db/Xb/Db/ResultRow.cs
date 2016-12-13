@@ -12,14 +12,15 @@ namespace Xb.Db
         private object[] _items;
         private ResultTable _table;
 
-        public ResultRow(ResultTable table, IDataRecord dataRecord)
+        public ResultTable Table => _table;
+
+        public ResultRow(ResultTable table, IDataRecord dataRecord = null)
         {
             this._table = table;
-
             this._items = new object[this._table.ColumnCount];
-            dataRecord.GetValues(this._items);
-        }
 
+            dataRecord?.GetValues(this._items);
+        }
 
         public object Item(int index)
         {

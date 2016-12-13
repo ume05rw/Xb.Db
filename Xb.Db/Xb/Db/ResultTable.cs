@@ -72,6 +72,11 @@ namespace Xb.Db
         }
 
 
+        public ResultRow NewRow()
+        {
+            return new ResultRow(this);
+        }
+
         public void Dispose()
         {
             foreach (var row in this._rows)
