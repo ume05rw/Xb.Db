@@ -39,6 +39,11 @@ namespace Xb.Db
         /// </summary>
         protected string SqlFind = "SELECT * FROM {0} WHERE {1} LIMIT 1 ";
 
+        /// <summary>
+        /// Connection
+        /// DBコネクション
+        /// </summary>
+        protected DbConnection Connection;
 
 
         /// <summary>
@@ -72,12 +77,6 @@ namespace Xb.Db
             /// </summary>
             None
         }
-
-        /// <summary>
-        /// Connection
-        /// DBコネクション
-        /// </summary>
-        protected DbConnection _connection;
 
         /// <summary>
         /// Hostname (or IpAddress)
@@ -303,60 +302,6 @@ namespace Xb.Db
 
         //    return this._models[tableName];
         //}
-
-
-        /// <summary>
-        /// Get 1 row matched
-        /// 条件に合致した最初の行を返す
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="whereString"></param>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public virtual ResultRow Find(string tableName
-                                     ,string whereString)
-        {
-            if (whereString == null)
-                whereString = "";
-
-            var sql = string.Format(this.SqlFind, tableName, whereString);
-            var rt = this.Query(sql);
-
-            //No-Data -> Nothing
-            if (rt == null || rt.Rows.Length <= 0)
-                return null;
-
-            //return first row
-            return rt.Rows[0];
-        }
-
-
-        /// <summary>
-        /// Get all rows matched
-        /// 条件に合致した全行データを返す。
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="whereString"></param>
-        /// <param name="orderString"></param>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public virtual ResultTable FindAll(string tableName
-                                          ,string whereString = null
-                                          ,string orderString = null)
-        {
-            whereString = whereString ?? "";
-            orderString = orderString ?? "";
-
-            var sql = $" SELECT * FROM {tableName} ";
-
-            if (!string.IsNullOrEmpty(whereString))
-                sql += $" WHERE {whereString}";
-
-            if (!string.IsNullOrEmpty(orderString))
-                sql += $" ORDER BY {orderString}";
-
-            return this.Query(sql);
-        }
 
 
         /// <summary>
@@ -682,7 +627,7 @@ namespace Xb.Db
                 {
                     try
                     {
-                        this._connection.Close();
+                        this.Connection.Close();
                     }
                     catch (Exception) { }
                 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace Xb.Db
         /// Connection
         /// DBコネクション
         /// </summary>
-        private new SqlConnection _connection;
+        private new SqlConnection Connection;
 
 
         /// <summary>
@@ -75,6 +76,7 @@ namespace Xb.Db
             base.TranCmdCommit = this.TranCmdCommit;
             base.TranCmdRollback = this.TranCmdRollback;
             base.SqlFind = this.SqlFind;
+            this._encoding = encoding ?? Encoding.GetEncoding("Shift_JIS");
 
             if (isBuildStructureModels)
             {
@@ -82,6 +84,7 @@ namespace Xb.Db
                 this.GetStructure();
             }
         }
+
 
         /// <summary>
         /// Connect DB
@@ -93,25 +96,25 @@ namespace Xb.Db
             //build connection string
             string connectionString
                 = string.Format("server={0};user id={1}; password={2}; database={3}; pooling=false{4}"
-                               ,this._address
-                               ,this._user
-                               ,this._password
-                               ,this._name
-                               ,string.IsNullOrEmpty(this._additionalConnectionString)
+                               , this._address
+                               , this._user
+                               , this._password
+                               , this._name
+                               , string.IsNullOrEmpty(this._additionalConnectionString)
                                     ? ""
                                     : "; " + this._additionalConnectionString);
 
             try
             {
                 //connect DB
-                this._connection = new SqlConnection();
-                this._connection.ConnectionString = connectionString;
-                this._connection.Open();
+                this.Connection = new SqlConnection();
+                this.Connection.ConnectionString = connectionString;
+                this.Connection.Open();
             }
             catch (Exception ex)
             {
                 Xb.Util.Out(ex);
-                this._connection = null;
+                this.Connection = null;
                 throw ex;
             }
 
@@ -119,7 +122,7 @@ namespace Xb.Db
             this._isInTransaction = false;
 
             //set connection refference
-            base._connection = this._connection;
+            base.Connection = this.Connection;
         }
 
 
@@ -191,6 +194,29 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Get DbParameter object.
+        /// DbParameterオブジェクトを取得する。
+        /// </summary>
+        /// <returns></returns>
+        public DbParameter GetParameter(string name = null
+                                       ,object value = null
+                                       ,SqlDbType type = SqlDbType.VarChar)
+        {
+            if (!string.IsNullOrEmpty(name)
+                && name.Substring(0, 1) != "@")
+                name = "@" + name;
+
+            var param = new SqlParameter();
+            param.Direction = ParameterDirection.Input;
+            param.ParameterName = name ?? "";
+            param.Value = value;
+            param.SqlDbType = type;
+            
+            return param;
+        }
+
+
+        /// <summary>
         /// Get DbCommand object.
         /// DbCommandオブジェクトを取得する。
         /// </summary>
@@ -200,7 +226,7 @@ namespace Xb.Db
         {
             var result = new SqlCommand
             {
-                Connection = this._connection
+                Connection = this.Connection
             };
 
             if (parameters != null
