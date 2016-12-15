@@ -17,72 +17,48 @@ namespace Xb.Db
             /// Name
             /// カラム名
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public string Name { get; }
 
             /// <summary>
             /// Max charactor length
             /// 最大文字数
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public int MaxLength { get; }
 
             /// <summary>
             /// Number of digits of Integer
             /// 整数桁数
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public int MaxInteger { get; }
 
             /// <summary>
             /// Number of digits of Decimal
             /// 少数桁数
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public int MaxDecimal { get; }
 
             /// <summary>
             /// Column type
             /// カラムの型
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public ColumnType Type { get; }
 
             /// <summary>
             /// Primary-Key flag
             /// プライマリキーか否か
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public bool IsPrimaryKey { get; }
 
             /// <summary>
             /// Nullable flag
             /// Nullを許可するか否か
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public bool IsNullable { get; }
 
             /// <summary>
             /// String encoding
             /// 文字列値のときのエンコード形式
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public System.Text.Encoding Encoding { get; set; }
 
 

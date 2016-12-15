@@ -18,36 +18,24 @@ namespace Xb.Db
             /// Name
             /// エラー名
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public string Name { get; }
 
             /// <summary>
             /// Value
             /// 値
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public string Value { get; }
 
             /// <summary>
             /// Error type
             /// エラー型
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public ErrorType Type { get; }
 
             /// <summary>
             /// Message
             /// メッセージ
             /// </summary>
-            /// <value></value>
-            /// <returns></returns>
-            /// <remarks></remarks>
             public string Message
             {
                 get

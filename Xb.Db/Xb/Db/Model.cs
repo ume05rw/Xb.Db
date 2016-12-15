@@ -18,110 +18,93 @@ namespace Xb.Db
         /// Column data type
         /// カラムの型区分
         /// </summary>
-        /// <remarks></remarks>
         public enum ColumnType
         {
             /// <summary>
             /// String
             /// 文字型
             /// </summary>
-            /// <remarks></remarks>
             String,
 
             /// <summary>
             /// Number
             /// 数値型
             /// </summary>
-            /// <remarks></remarks>
             Number,
 
             /// <summary>
             /// DateTime
             /// 日付型
             /// </summary>
-            /// <remarks></remarks>
             DateTime,
 
             /// <summary>
             /// Others, NOT validation target
             /// その他(型・桁数チェック対象外)
             /// </summary>
-            /// <remarks></remarks>
             Others
         }
-
 
         /// <summary>
         /// Error type
         /// エラー区分
         /// </summary>
-        /// <remarks></remarks>
         public enum ErrorType
         {
             /// <summary>
             /// Validation OK
             /// エラー無し
             /// </summary>
-            /// <remarks></remarks>
             NoError,
 
             /// <summary>
             /// Charactor length overflow
             /// 文字長超過
             /// </summary>
-            /// <remarks></remarks>
             LengthOver,
 
             /// <summary>
             /// Value is not number
             /// 数値でない値
             /// </summary>
-            /// <remarks></remarks>
             NotNumber,
 
             /// <summary>
             /// Number of digits of integer part exceeded
             /// 整数部分の桁数超過
             /// </summary>
-            /// <remarks></remarks>
             IntegerOver,
 
             /// <summary>
             /// Number of digits of decimal part exceeded
             /// 小数部分の桁数超過
             /// </summary>
-            /// <remarks></remarks>
             DecimalOver,
 
             /// <summary>
             /// Null Not Permitted
             /// Nullが許可されていないカラムでNullを検出
             /// </summary>
-            /// <remarks></remarks>
             NotPermittedNull,
 
             /// <summary>
             /// Value is not datetime
             /// 日付型でない値
             /// </summary>
-            /// <remarks></remarks>
             NotDateTime,
 
             /// <summary>
             /// Unknown error
             /// 未定義のエラー
             /// </summary>
-            /// <remarks></remarks>
             NotDefinedError
         }
-
 
         /// <summary>
         /// String column type
         /// 文字型として認識する型文字列列挙
         /// </summary>
-        /// <remarks></remarks>
-        private readonly string[] _typesOfString = new string[] {
+        private static readonly string[] TypesOfString = new string[] {
             "CHAR"
           , "LONGTEXT"
           , "MEDIUMTEXT"
@@ -137,8 +120,7 @@ namespace Xb.Db
         /// Number column type
         /// 数値型として認識する型文字列列挙
         /// </summary>
-        /// <remarks></remarks>
-        private readonly string[] _typesOfNumber = new string[] {
+        private static readonly string[] TypesOfNumber = new string[] {
             "BIGINT"
           , "BIT"
           , "DECIMAL"
@@ -159,44 +141,42 @@ namespace Xb.Db
         /// Datetime column type
         /// 日付型として認識する型文字列列挙
         /// </summary>
-        private readonly string[] _typesOfDateTime = new string[] {
+        private static readonly string[] TypesOfDateTime = new string[] {
             "DATETIME"
           , "DATE"
           , "TIME"
         };
 
-        private string _tableName;
-        private Xb.Db.Model.Column[] _columns;
-        private Xb.Db.Model.Column[] _pkeyColumns;
+
+        /// <summary>
+        /// Xb.Db-Object ref.
+        /// DB接続オブジェクト参照
+        /// </summary>
         private Xb.Db.DbBase _db;
+
+        /// <summary>
+        /// Row-Structure template
+        /// テーブル行構造テンプレート用ResultTable
+        /// </summary>
         private ResultTable _templateTable;
 
         /// <summary>
         /// Table name
         /// テーブル名
         /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public string TableName => this._tableName;
+        public string TableName { get; private set; }
 
         /// <summary>
         /// Array of Xb.Db.Column object
         /// カラムオブジェクト
         /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public Db.Model.Column[] Columns => this._columns;
+        public Db.Model.Column[] Columns { get; private set; }
 
         /// <summary>
         /// Array of primary key Xb.Db.Column object
         /// プライマリキーのカラムオブジェクト
         /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public Db.Model.Column[] PkeyColumns => this._pkeyColumns;
+        public Db.Model.Column[] PkeyColumns { get; private set; }
 
 
         /// <summary>
@@ -219,8 +199,8 @@ namespace Xb.Db
             //get Xb.Db.DbBase ref.
             this._db = db;
 
-            this._tableName = infoRows[0].Item("TABLE_NAME").ToString();
-            this._columns = new Xb.Db.Model.Column[infoRows.Length];
+            this.TableName = infoRows[0].Item("TABLE_NAME").ToString();
+            this.Columns = new Xb.Db.Model.Column[infoRows.Length];
             var pkeyColumns = new List<Xb.Db.Model.Column>();
 
             //loop column count
@@ -232,7 +212,7 @@ namespace Xb.Db
                 var maxLength = 0;
                 var type = default(ColumnType);
 
-                if (_typesOfNumber.Contains(typeString))
+                if (TypesOfNumber.Contains(typeString))
                 {
                     type = ColumnType.Number;
                     maxInteger = int.Parse(infoRows[i].Item("NUM_PREC").ToString());
@@ -244,7 +224,7 @@ namespace Xb.Db
                                 + (maxDecimal > 0 ? 1 : 0); //decimal point
 
                 }
-                else if (_typesOfString.Contains(typeString))
+                else if (TypesOfString.Contains(typeString))
                 {
                     type = ColumnType.String;
 
@@ -257,7 +237,7 @@ namespace Xb.Db
                     maxDecimal = -1;
 
                 }
-                else if (_typesOfDateTime.Contains(typeString))
+                else if (TypesOfDateTime.Contains(typeString))
                 {
                     type = ColumnType.DateTime;
                     maxLength = 21;
@@ -278,7 +258,7 @@ namespace Xb.Db
                 //DataTable上の型都合で、"1"と"true"と2種類取れてしまうため、整形する。
                 var nullable = (infoRows[i].Item("IS_NULLABLE").ToString().ToLower().Replace("true", "1") == "1");
 
-                this._columns[i] = new Xb.Db.Model.Column(infoRows[i].Item("COLUMN_NAME").ToString()
+                this.Columns[i] = new Xb.Db.Model.Column(infoRows[i].Item("COLUMN_NAME").ToString()
                                                         , maxLength
                                                         , maxInteger
                                                         , maxDecimal
@@ -288,13 +268,13 @@ namespace Xb.Db
 
                 if (isPkey)
                 {
-                    pkeyColumns.Add(this._columns[i]);
+                    pkeyColumns.Add(this.Columns[i]);
                 }
             }
 
-            this._templateTable = this._db.Query($"SELECT * FROM {this._tableName} WHERE 1 = 0 ");
+            this._templateTable = this._db.Query($"SELECT * FROM {this.TableName} WHERE 1 = 0 ");
 
-            this._pkeyColumns = pkeyColumns.ToArray();
+            this.PkeyColumns = pkeyColumns.ToArray();
         }
 
 
@@ -318,10 +298,10 @@ namespace Xb.Db
         /// <remarks></remarks>
         public Xb.Db.Model.Column GetColumn(string columnName)
         {
-            var cols = this._columns.Where(col => col.Name == columnName);
+            var columns = this.Columns.Where(col => col.Name == columnName);
 
-            if (cols.Any())
-                return cols.First();
+            if (columns.Any())
+                return columns.First();
 
             Util.Out("Xb.Db.Model.GetColumn: column name not found");
             throw new ArgumentException("Xb.Db.Model.GetColumn: column name not found");
@@ -338,12 +318,12 @@ namespace Xb.Db
         public Xb.Db.Model.Column GetColumn(int index)
         {
             if (0 > index
-                || index > this._columns.Length - 1)
+                || index > this.Columns.Length - 1)
             {
                 Util.Out("Xb.Db.Model.GetColumn: index out of range");
                 throw new ArgumentOutOfRangeException("Xb.Db.Model.GetColumn: index out of range");
             }
-            return this._columns[index];
+            return this.Columns[index];
         }
 
 
@@ -359,11 +339,11 @@ namespace Xb.Db
             if (primaryKeyValue == null)
                 throw new ArgumentException("Xb.Db.Model.Find: passing null");
 
-            if (this._pkeyColumns.Length != 1)
+            if (this.PkeyColumns.Length != 1)
                 throw new ArgumentException("Xb.Db.Mode.Find: multiple primary key columns");
 
-            return this._db.Find(this._tableName,
-                                 this._pkeyColumns[0].GetSqlFormula(primaryKeyValue));
+            return this._db.Find(this.TableName,
+                                 this.PkeyColumns[0].GetSqlFormula(primaryKeyValue));
         }
 
 
@@ -379,14 +359,15 @@ namespace Xb.Db
             if (primaryKeyValues == null)
                 throw new ArgumentException("Xb.Db.Model.Find: passing null");
 
-            if (primaryKeyValues.Length != this._pkeyColumns.Length)
+            if (primaryKeyValues.Length != this.PkeyColumns.Length)
                 throw new ArgumentException("Xb.Db.Model.Find: not match primary key count and passing");
 
             var wheres = new List<string>();
-            for (var i = 0; i <= this._pkeyColumns.Length - 1; i++)
-                wheres.Add(this._pkeyColumns[i].GetSqlFormula(primaryKeyValues[i]));
 
-            return this._db.Find(this._tableName, string.Join(" AND ", wheres));
+            for (var i = 0; i <= this.PkeyColumns.Length - 1; i++)
+                wheres.Add(this.PkeyColumns[i].GetSqlFormula(primaryKeyValues[i]));
+
+            return this._db.Find(this.TableName, string.Join(" AND ", wheres));
         }
 
 
@@ -401,7 +382,7 @@ namespace Xb.Db
         public virtual ResultTable FindAll(string whereString = null
                                          , string orderString = null)
         {
-            return this._db.FindAll(this._tableName, whereString, orderString);
+            return this._db.FindAll(this.TableName, whereString, orderString);
         }
 
 
@@ -428,7 +409,7 @@ namespace Xb.Db
         {
             var errors = new List<Xb.Db.Model.Error>();
 
-            foreach (Xb.Db.Model.Column col in this._columns)
+            foreach (Xb.Db.Model.Column col in this.Columns)
             {
                 if(!row.Table.Columns.Any(rc => rc.ColumnName == col.Name))
                     continue;
@@ -466,7 +447,7 @@ namespace Xb.Db
             foreach (var col in row.Table.Columns)
                 colNames.Add(col.ColumnName);
 
-            if (this._pkeyColumns.Length <= 0)
+            if (this.PkeyColumns.Length <= 0)
             {
                 return new Xb.Db.Model.Error[]
                 {
@@ -476,7 +457,7 @@ namespace Xb.Db
             }
 
             var wheres = new List<string>();
-            foreach (Xb.Db.Model.Column col in this._pkeyColumns)
+            foreach (Xb.Db.Model.Column col in this.PkeyColumns)
             {
                 var value = row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
                                 ? this.NullFormat(row.Item(col.Name))
@@ -484,7 +465,7 @@ namespace Xb.Db
                 wheres.Add(col.GetSqlFormula(value));
             }
 
-            var sql = $"SELECT 1 FROM {this._tableName} WHERE {string.Join(" AND ", wheres)} ";
+            var sql = $"SELECT 1 FROM {this.TableName} WHERE {string.Join(" AND ", wheres)} ";
             var dt = this._db.Query(sql);
 
             if (dt == null
@@ -518,15 +499,15 @@ namespace Xb.Db
                 colNames.Add(col.ColumnName);
 
             var colValues = new Dictionary<string, string>();
-            foreach (Xb.Db.Model.Column col in this._columns)
+            foreach (Xb.Db.Model.Column col in this.Columns)
                 colValues.Add(col.Name,
                               row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
                                   ? this.NullFormat(row.Item(col.Name))
                                   : null);
 
-            var targetColumns = this._columns.Where(col => colNames.Contains(col.Name)).ToList();
+            var targetColumns = this.Columns.Where(col => colNames.Contains(col.Name)).ToList();
 
-            var sql = $"INSERT INTO {this._tableName} ( {string.Join(", ", targetColumns.Select(col => col.Name))} ) " 
+            var sql = $"INSERT INTO {this.TableName} ( {string.Join(", ", targetColumns.Select(col => col.Name))} ) " 
                 + $"  VALUES ( {string.Join(", ", targetColumns.Select(col => col.GetSqlValue(colValues[col.Name])))} )";
 
             if (this._db.Execute(sql) != 1)
@@ -560,7 +541,7 @@ namespace Xb.Db
                 colNames.Add(col.ColumnName);
 
             if (keyColumns == null)
-                keyColumns = this._pkeyColumns.Select(col => col.Name).ToArray();
+                keyColumns = this.PkeyColumns.Select(col => col.Name).ToArray();
 
             if (excludeColumns == null)
                 excludeColumns = new string[] {};
@@ -568,7 +549,7 @@ namespace Xb.Db
             var tmpKeys = new List<string>();
             var tmpExcludes = new List<string>();
             var colValues = new Dictionary<string, string>();
-            foreach (Xb.Db.Model.Column col in this._columns)
+            foreach (Xb.Db.Model.Column col in this.Columns)
             {
                 colValues.Add(col.Name,
                     row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
@@ -596,7 +577,7 @@ namespace Xb.Db
             }
 
             var targetColumns
-                = this._columns.Where(col => colNames.Contains(col.Name)
+                = this.Columns.Where(col => colNames.Contains(col.Name)
                                              && !excludeColumns.Contains(col.Name)).ToList();
 
             var updates = new List<string>();
@@ -624,7 +605,7 @@ namespace Xb.Db
                 };
             }
 
-            var sql = $" UPDATE {this._tableName} SET {string.Join(" , ", updates)} " 
+            var sql = $" UPDATE {this.TableName} SET {string.Join(" , ", updates)} " 
                     + $" WHERE {string.Join(" AND ", wheres)}";
 
             this._db.Execute(sql);
@@ -646,11 +627,11 @@ namespace Xb.Db
         {
             if (keyColumns == null
                 || keyColumns.Length == 0)
-                keyColumns = this._pkeyColumns.Select(col => col.Name).ToArray();
+                keyColumns = this.PkeyColumns.Select(col => col.Name).ToArray();
 
 
             var tmpKeys = new List<string>();
-            foreach (Xb.Db.Model.Column col in this._columns)
+            foreach (Xb.Db.Model.Column col in this.Columns)
             {
                 if (keyColumns.Contains(col.Name))
                     tmpKeys.Add(col.Name);
@@ -683,7 +664,7 @@ namespace Xb.Db
                 wheres.Add(this.GetColumn(col).GetSqlFormula(row.Item(col)));
             }
 
-            var sql = $"DELETE FROM {this._tableName} WHERE {string.Join(" AND ", wheres)}";
+            var sql = $"DELETE FROM {this.TableName} WHERE {string.Join(" AND ", wheres)}";
             this._db.Execute(sql);
 
             return new Db.Model.Error[] { };
@@ -772,9 +753,9 @@ namespace Xb.Db
         /// <param name="excludeColumnsOnUpdate"></param>
         /// <returns></returns>
         /// <remarks></remarks>
-        public Xb.Db.Model.Error[] ReplaceUpdate(ResultTable dtAfter,
-                                                 ResultTable dtBefore = null,
-                                                 params string[] excludeColumnsOnUpdate)
+        public Xb.Db.Model.Error[] ReplaceUpdate(ResultTable dtAfter
+                                               , ResultTable dtBefore = null
+                                               , params string[] excludeColumnsOnUpdate)
         {
             return this.ReplaceUpdate(dtAfter.Rows,
                                       dtBefore.Rows,
@@ -800,13 +781,11 @@ namespace Xb.Db
             {
                 if (disposing)
                 {
-                    this._tableName = null;
-                    this._columns = null;
-                    this._pkeyColumns = null;
                     this._db = null;
                     this._templateTable = null;
-
-                    GC.Collect();
+                    this.TableName = null;
+                    this.Columns = null;
+                    this.PkeyColumns = null;
                 }
             }
         }
