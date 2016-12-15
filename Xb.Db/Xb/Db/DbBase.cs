@@ -343,6 +343,26 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Execute Non-Select query, Get effected row count
+        /// SQL文でSELECTでないコマンドを実行する
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public async Task<int> ExecuteAsync(string sql, DbParameter[] parameters = null)
+        {
+            int result = -1;
+
+            await Task.Run(() =>
+            {
+                result = this.Execute(sql, parameters);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Execute Select query, Get DbDataReader object.
         /// SELECTクエリを実行し、DbDataReaderオブジェクトを取得する。
         /// </summary>
@@ -370,6 +390,26 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Execute Select query, Get DbDataReader object.
+        /// SELECTクエリを実行し、DbDataReaderオブジェクトを取得する。
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public async Task<DbDataReader> GetReaderAsync(string sql, DbParameter[] parameters = null)
+        {
+            DbDataReader result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.GetReader(sql, parameters);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Execute Select query, Get Xb.Db.ResultTable
         /// SELECTクエリを実行し、結果を Xb.Db.ResultTable で返す
         /// </summary>
@@ -390,6 +430,26 @@ namespace Xb.Db
                 Xb.Util.Out(ex);
                 throw new Exception("Xb.Db.DbBase.Query: failure \r\n" + ex.Message + "\r\n" + sql);
             }
+        }
+
+
+        /// <summary>
+        /// Execute Select query, Get Xb.Db.ResultTable
+        /// SELECTクエリを実行し、結果を Xb.Db.ResultTable で返す
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<ResultTable> QueryAsync(string sql, DbParameter[] parameters = null)
+        {
+            ResultTable result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Query(sql, parameters);
+            });
+
+            return result;
         }
 
 
@@ -443,6 +503,27 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Execute Select query, Get Generic-Type object.
+        /// SELECTクエリを実行し、結果を指定クラス配列で返す
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public async Task<T[]> QueryAsync<T>(string sql, DbParameter[] parameters = null)
+        {
+            T[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Query<T>(sql, parameters);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Get first matched row
         /// 条件に合致した最初の行を返す
         /// </summary>
@@ -464,6 +545,27 @@ namespace Xb.Db
 
             //return first row
             return rt.Rows[0];
+        }
+
+
+        /// <summary>
+        /// Get first matched row
+        /// 条件に合致した最初の行を返す
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="whereString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual async Task<ResultRow> FindAsync(string tableName, string whereString)
+        {
+            ResultRow result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Find(tableName, whereString);
+            });
+
+            return result;
         }
 
 
@@ -492,6 +594,30 @@ namespace Xb.Db
                 sql += $" ORDER BY {orderString}";
 
             return this.Query(sql);
+        }
+
+
+        /// <summary>
+        /// Get matched all rows
+        /// 条件に合致した全行データを返す。
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="whereString"></param>
+        /// <param name="orderString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual async Task<ResultTable> FindAllAsync(string tableName
+                                                          , string whereString = null
+                                                          , string orderString = null)
+        {
+            ResultTable result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.FindAll(tableName, whereString, orderString);
+            });
+
+            return result;
         }
 
 
@@ -525,6 +651,21 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Start transaction
+        /// トランザクションを開始する
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual async Task BeginTransactionAsync()
+        {
+            await Task.Run(() =>
+            {
+                this.BeginTransaction();
+            });
+        }
+
+
+        /// <summary>
         /// Commit transaction
         /// トランザクションを確定する
         /// </summary>
@@ -548,6 +689,21 @@ namespace Xb.Db
                 Xb.Util.Out(ex);
                 throw ex;
             }
+        }
+
+
+        /// <summary>
+        /// Commit transaction
+        /// トランザクションを確定する
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual async Task CommitTransactionAsync()
+        {
+            await Task.Run(() =>
+            {
+                this.CommitTransaction();
+            });
         }
 
 
@@ -579,6 +735,21 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Rollback transaction
+        /// トランザクションを戻す
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual async Task RollbackTransactionAsync()
+        {
+            await Task.Run(() =>
+            {
+                this.RollbackTransaction();
+            });
+        }
+
+
+        /// <summary>
         /// Reset transaction
         /// トランザクションを初期化する
         /// </summary>
@@ -606,7 +777,7 @@ namespace Xb.Db
         /// </summary>
         /// <param name="fileName"></param>
         /// <remarks></remarks>
-        public virtual bool BackupDb(string fileName)
+        public virtual async Task<bool> BackupDbAsync(string fileName)
         {
             Xb.Util.Out("Xb.Db.DbBase.BackupDb: Execute only subclass");
             throw new InvalidOperationException("Xb.Db.DbBase.BackupDb: Execute only subclass");
@@ -620,7 +791,7 @@ namespace Xb.Db
         /// <param name="fileName"></param>
         /// <returns></returns>
         /// <remarks></remarks>
-        protected bool RemoveIfExints(string fileName)
+        protected async Task<bool> RemoveIfExintsAsync(string fileName)
         {
             //渡し値パスが実在することを確認する。
             if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(fileName)))
@@ -634,7 +805,10 @@ namespace Xb.Db
 
             try
             {
-                System.IO.File.Delete(fileName);
+                await Task.Run(() =>
+                {
+                    System.IO.File.Delete(fileName);
+                });
             }
             catch (Exception ex)
             {

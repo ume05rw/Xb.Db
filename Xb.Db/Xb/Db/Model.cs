@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Xb.Db
 {
@@ -348,6 +349,26 @@ namespace Xb.Db
 
         /// <summary>
         /// Get first matched Xb.Db.ResultRow 
+        /// 渡し値主キー値に合致したResultRowを返す。
+        /// </summary>
+        /// <param name="primaryKeyValue"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<ResultRow> FindAsync(object primaryKeyValue)
+        {
+            ResultRow result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Find(primaryKeyValue);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Get first matched Xb.Db.ResultRow 
         /// 渡した主キー値配列に合致したDataRowを返す。
         /// </summary>
         /// <param name="primaryKeyValues"></param>
@@ -371,6 +392,26 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Get first matched Xb.Db.ResultRow 
+        /// 渡した主キー値配列に合致したDataRowを返す。
+        /// </summary>
+        /// <param name="primaryKeyValues"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<ResultRow> FindAsync(params object[] primaryKeyValues)
+        {
+            ResultRow result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Find(primaryKeyValues);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Get matched Xb.Db.ResultTable
         /// 条件に合致した全行データを返す。
         /// </summary>
@@ -382,6 +423,28 @@ namespace Xb.Db
                                          , string orderString = null)
         {
             return this._db.FindAll(this.TableName, whereString, orderString);
+        }
+
+
+        /// <summary>
+        /// Get matched Xb.Db.ResultTable
+        /// 条件に合致した全行データを返す。
+        /// </summary>
+        /// <param name="whereString"></param>
+        /// <param name="orderString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual async Task<ResultTable> FindAllAsync(string whereString = null
+                                                          , string orderString = null)
+        {
+            ResultTable result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.FindAll(whereString, orderString);
+            });
+
+            return result;
         }
 
 
@@ -486,6 +549,27 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Write value to DB
+        /// 値をDBに書き込む。
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<Xb.Db.Model.Error[]> WriteAsync(ResultRow row
+                                                        , params string[] excludeColumnsOnUpdate)
+        {
+            Xb.Db.Model.Error[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Write(row, excludeColumnsOnUpdate);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Do Insert
         /// INSERTを実行する。
         /// </summary>
@@ -520,6 +604,25 @@ namespace Xb.Db
                 };
             }
             return new Db.Model.Error[] { };
+        }
+
+
+        /// <summary>
+        /// Do Insert
+        /// INSERTを実行する。
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        public async Task<Xb.Db.Model.Error[]> InsertAsync(ResultRow row)
+        {
+            Xb.Db.Model.Error[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Insert(row);
+            });
+
+            return result;
         }
 
 
@@ -614,6 +717,29 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Do Update
+        /// UPDATEを実行する。
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="keyColumns"></param>
+        /// <param name="excludeColumns"></param>
+        /// <returns></returns>
+        public async Task<Db.Model.Error[]> UpdateAsync(ResultRow row
+                                                      , string[] keyColumns = null
+                                                      , string[] excludeColumns = null)
+        {
+            Xb.Db.Model.Error[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Update(row, keyColumns, excludeColumns);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
         /// Do Delete
         /// 該当キーの行を削除する。
         /// </summary>
@@ -669,6 +795,27 @@ namespace Xb.Db
             return new Db.Model.Error[] { };
         }
 
+
+        /// <summary>
+        /// Do Delete
+        /// 該当キーの行を削除する。
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="keyColumns"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<Xb.Db.Model.Error[]> DeleteAsync(ResultRow row
+                                                         , params string[] keyColumns)
+        {
+            Xb.Db.Model.Error[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.Delete(row, keyColumns);
+            });
+
+            return result;
+        }
 
         /// <summary>
         /// Update the difference.
@@ -745,6 +892,30 @@ namespace Xb.Db
 
         /// <summary>
         /// Update the difference.
+        /// 新旧DataRow配列を比較し、差分データ分のレコードを更新する。
+        /// </summary>
+        /// <param name="drsAfter"></param>
+        /// <param name="drsBefore"></param>
+        /// <param name="excludeColumnsOnUpdate"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<Xb.Db.Model.Error[]> ReplaceUpdateAsync(List<ResultRow> drsAfter
+                                                                , List<ResultRow> drsBefore = null
+                                                                , params string[] excludeColumnsOnUpdate)
+        {
+            Xb.Db.Model.Error[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.ReplaceUpdate(drsAfter, drsBefore, excludeColumnsOnUpdate);
+            });
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Update the difference.
         /// 新旧データテーブルを比較し、差分データ分のレコードを更新する。
         /// </summary>
         /// <param name="dtAfter"></param>
@@ -759,6 +930,30 @@ namespace Xb.Db
             return this.ReplaceUpdate(dtAfter.Rows,
                                       dtBefore.Rows,
                                       excludeColumnsOnUpdate);
+        }
+
+
+        /// <summary>
+        /// Update the difference.
+        /// 新旧データテーブルを比較し、差分データ分のレコードを更新する。
+        /// </summary>
+        /// <param name="dtAfter"></param>
+        /// <param name="dtBefore"></param>
+        /// <param name="excludeColumnsOnUpdate"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public async Task<Xb.Db.Model.Error[]> ReplaceUpdateAsync(ResultTable dtAfter
+                                                                , ResultTable dtBefore = null
+                                                                , params string[] excludeColumnsOnUpdate)
+        {
+            Xb.Db.Model.Error[] result = null;
+
+            await Task.Run(() =>
+            {
+                result = this.ReplaceUpdate(dtAfter, dtBefore, excludeColumnsOnUpdate);
+            });
+
+            return result;
         }
 
 

@@ -210,20 +210,20 @@ namespace Xb.Db
         /// <param name="fileName"></param>
         /// <returns></returns>
         /// <remarks></remarks>
-        public override bool BackupDb(string fileName)
+        public override async Task<bool> BackupDbAsync(string fileName)
         {
 
             //check file-path
-            if (!base.RemoveIfExints(fileName))
+            if (!await this.RemoveIfExintsAsync(fileName))
                 return false;
 
             //execute backup
             try
             {
-                this.Execute(string.Format("BACKUP DATABASE {0} TO DISK = '{1}'  with INIT, NAME='{2}'"
-                                         , this.Name
-                                         , fileName
-                                         , this.Name));
+                await this.ExecuteAsync(string.Format("BACKUP DATABASE {0} TO DISK = '{1}'  with INIT, NAME='{2}'"
+                                                    , this.Name
+                                                    , fileName
+                                                    , this.Name));
             }
             catch (Exception ex)
             {
