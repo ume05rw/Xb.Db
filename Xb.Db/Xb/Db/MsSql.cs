@@ -51,9 +51,7 @@ namespace Xb.Db
             if (isBuildModels)
             {
                 foreach (var model in this.Models.Values)
-                {
                     model.SetEncoding(this.Encoding);
-                }
             }
         }
 
@@ -223,14 +221,14 @@ namespace Xb.Db
             try
             {
                 this.Execute(string.Format("BACKUP DATABASE {0} TO DISK = '{1}'  with INIT, NAME='{2}'"
-                                          ,this.Name
-                                          ,fileName
-                                          ,this.Name));
+                                         , this.Name
+                                         , fileName
+                                         , this.Name));
             }
             catch (Exception ex)
             {
                 Xb.Util.Out("Xb.Db.MsSql.BackupDb: backup query failure：" + ex.Message);
-                throw new Exception("backup query failure：" + ex.Message);
+                throw new Exception("Xb.Db.MsSql.BackupDb: backup query failure：" + ex.Message);
             }
 
             return true;
