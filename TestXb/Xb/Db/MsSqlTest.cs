@@ -225,6 +225,7 @@ namespace TestXb
             Assert.AreEqual((decimal)12.345, reader.GetDecimal(1));
             Assert.AreEqual(12345, reader.GetInt32(2));
             Assert.AreEqual(DateTime.Parse("2016-12-13"), reader.GetDateTime(3));
+            Assert.IsFalse(reader.Read());
 
             db.Dispose();
             this.Out("GetReaderTest End.");

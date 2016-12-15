@@ -40,9 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Xb\Db\Column.cs" />
+    <Compile Include="Xb\Db\Model.Column.cs" />
     <Compile Include="Xb\Db\DbBase.cs" />
-    <Compile Include="Xb\Db\Error.cs" />
+    <Compile Include="Xb\Db\Model.Error.cs" />
     <Compile Include="Xb\Db\Model.cs" />
     <Compile Include="Xb\Db\MsSql.cs" />
     <Compile Include="Xb\Db\ResultRow.cs" />
