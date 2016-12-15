@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xb.Db", "Xb.Db\Xb.Db.csproj", "{E934D179-93CC-4890-86F6-2827D2D5CD61}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xb.Db.STD1.3", "Xb.Db\Xb.Db.STD1.3.csproj", "{E934D179-93CC-4890-86F6-2827D2D5CD61}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestXb", "TestXb\TestXb.csproj", "{3CC48E7F-D226-48F2-A365-AD7069FDAD38}"
 EndProject
