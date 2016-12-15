@@ -16,37 +16,6 @@ namespace Xb.Db
     public class DbBase : IDisposable
     {
         /// <summary>
-        /// transaction begin command
-        /// トランザクション開始SQLコマンド
-        /// </summary>
-        protected string TranCmdBegin = "BEGIN";
-
-        /// <summary>
-        /// transaction commit command
-        /// トランザクション確定SQLコマンド
-        /// </summary>
-        protected string TranCmdCommit = "COMMIT";
-
-        /// <summary>
-        /// transanction rollback command
-        /// トランザクションロールバックSQLコマンド
-        /// </summary>
-        protected string TranCmdRollback = "ROLLBACK";
-
-        /// <summary>
-        /// 1 record selection query template
-        /// レコード存在検証SQLテンプレート
-        /// </summary>
-        protected string SqlFind = "SELECT * FROM {0} WHERE {1} LIMIT 1 ";
-
-        /// <summary>
-        /// Connection
-        /// DBコネクション
-        /// </summary>
-        protected DbConnection Connection;
-
-
-        /// <summary>
         /// Wild-Card Position type
         /// Like検索時のワイルドカード位置
         /// </summary>
@@ -54,19 +23,19 @@ namespace Xb.Db
         public enum LikeMarkPosition
         {
             /// <summary>
-            /// Front
+            /// '%' Add Top of string
             /// 前にワイルドカード(後方一致)
             /// </summary>
             Before,
 
             /// <summary>
-            /// After
+            /// '%' Add End of string
             /// 後にワイルドカード(前方一致)
             /// </summary>
             After,
 
             /// <summary>
-            /// Both
+            /// '%' Add Top, End of string
             /// 前後にワイルドカード(部分一致)
             /// </summary>
             Both,
@@ -78,86 +47,81 @@ namespace Xb.Db
             None
         }
 
+
         /// <summary>
-        /// Hostname (or IpAddress)
+        /// transaction begin command
+        /// トランザクション開始SQLコマンド
+        /// </summary>
+        protected string TranCmdBegin { get; set; } = "BEGIN";
+
+        /// <summary>
+        /// transaction commit command
+        /// トランザクション確定SQLコマンド
+        /// </summary>
+        protected string TranCmdCommit { get; set; } = "COMMIT";
+
+        /// <summary>
+        /// transanction rollback command
+        /// トランザクションロールバックSQLコマンド
+        /// </summary>
+        protected string TranCmdRollback { get; set; } = "ROLLBACK";
+
+        /// <summary>
+        /// 1 record selection query template
+        /// レコード存在検証SQLテンプレート
+        /// </summary>
+        protected string SqlFind { get; set; } = "SELECT * FROM {0} WHERE {1} LIMIT 1 ";
+
+        /// <summary>
+        /// Connection
+        /// DBコネクション
+        /// </summary>
+        protected DbConnection Connection { get; set; }
+        
+        /// <summary>
+        /// Hostname(or IpAddress)
         /// 接続先アドレス(orサーバホスト名)
         /// </summary>
-        protected string _address;
+        public string Address { get; }
 
         /// <summary>
         /// Schema name
         /// 接続DBスキーマ名
         /// </summary>
-        protected string _name;
+        public string Name { get; }
 
         /// <summary>
         /// User name
         /// 接続ユーザー名
         /// </summary>
-        protected string _user;
+        public string User { get; }
 
         /// <summary>
         /// Password
-        /// 接続パスワード
+        /// 接続ユーザーパスワード
         /// </summary>
-        protected string _password;
+        protected string Password { get; }
 
         /// <summary>
-        /// Additional connection string
-        /// 接続時の補助設定記述用文字列
+        /// Optional connection string
+        /// 補足接続文字列
         /// </summary>
-        protected string _additionalConnectionString;
-
-        /// <summary>
-        /// Table name
-        /// 接続スキーマ配下のテーブル名リスト
-        /// </summary>
-        protected List<string> _tableNames;
-
-        /// <summary>
-        /// Table-Structure ResultTable
-        /// 接続スキーマ配下のテーブル構造クエリ結果を保持するResultTable
-        /// </summary>
-        protected ResultTable _structureTable;
+        public string AdditionalConnectionString { get; }
 
         /// <summary>
         /// Encode
         /// 文字列処理時のエンコードオブジェクト
         /// </summary>
-        protected Encoding _encoding = Encoding.UTF8;
-
-        /// <summary>
-        /// Transaction-Flag
-        /// 現在トランザクション処理中か否か
-        /// </summary>
-        protected bool _isInTransaction;
-
-        /// <summary>
-        /// Hostname(or IpAddress)
-        /// 接続先アドレス(orサーバホスト名)
-        /// </summary>
         /// <value></value>
         /// <returns></returns>
         /// <remarks></remarks>
-        public string Address => this._address;
+        public Encoding Encoding { get; protected set; }
 
         /// <summary>
-        /// Schema name
-        /// 接続DBスキーマ名
+        /// Transaction flag
+        /// このコネクションが、現在トランザクション中か否かを返す。
         /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public string Name => this._name;
-
-        /// <summary>
-        /// User name
-        /// 接続ユーザー名
-        /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public string User => this._user;
+        public bool IsInTransaction { get; private set; }
 
         /// <summary>
         /// Table names list
@@ -166,7 +130,7 @@ namespace Xb.Db
         /// <value></value>
         /// <returns></returns>
         /// <remarks></remarks>
-        public List<string> TableNames => this._tableNames;
+        public string[] TableNames { get; protected set; } = new string[] {};
 
         /// <summary>
         /// Table-Scructure ResultTable
@@ -175,25 +139,13 @@ namespace Xb.Db
         /// <value></value>
         /// <returns></returns>
         /// <remarks></remarks>
-        public ResultTable StructureTable => this._structureTable;
+        protected ResultTable StructureTable { get; set; }
 
         /// <summary>
-        /// Encode
-        /// 文字列処理時のエンコードオブジェクト
+        /// Xb.Db.Model object of Tables
+        /// テーブルごとのモデルオブジェクト
         /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public Encoding Encoding => this._encoding;
-
-        /// <summary>
-        /// Transaction flag
-        /// このコネクションが、現在トランザクション中か否かを返す。
-        /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public bool IsInTransaction => this._isInTransaction;
+        public Dictionary<string, Xb.Db.Model> Models { get; protected set; } = new Dictionary<string, Model>();
 
 
         /// <summary>
@@ -215,23 +167,35 @@ namespace Xb.Db
         /// <param name="password"></param>
         /// <param name="address"></param>
         /// <param name="additionalString"></param>
+        /// <param name="isBuildModels"></param>
         /// <param name="encoding"></param>
         protected DbBase(string name
-            , string user = ""
-            , string password = ""
-            , string address = ""
-            , string additionalString = ""
-            , Encoding encoding = null)
+                       , string user = ""
+                       , string password = ""
+                       , string address = ""
+                       , string additionalString = ""
+                       , bool isBuildModels = true
+                       , Encoding encoding = null)
         {
-            this._address = address;
-            this._name = name;
-            this._user = user;
-            this._password = password;
-            this._additionalConnectionString = additionalString;
-            this._encoding = encoding ?? System.Text.Encoding.UTF8;
+            this.Address = address;
+            this.Name = name;
+            this.User = user;
+            this.Password = password;
+            this.AdditionalConnectionString = additionalString;
+            this.Encoding = encoding ?? System.Text.Encoding.UTF8;
 
             //Connect
             this.Open();
+
+
+            if (isBuildModels)
+            {
+                //Get Table-Structures
+                this.GetStructure();
+
+                //build Models of Tables
+                this.BuildModels();
+            }
         }
 
 
@@ -264,59 +228,45 @@ namespace Xb.Db
         /// テーブルごとのモデルオブジェクトを生成、保持させる。
         /// </summary>
         /// <remarks></remarks>
-        protected void BuildModels()
+        private void BuildModels()
         {
-            if (this._tableNames == null || this._structureTable == null)
+            if (this.TableNames == null || this.StructureTable == null)
             {
                 Xb.Util.Out("Xb.Db.BuildModels: Table-Structure not found");
                 throw new InvalidOperationException("Xb.Db.BuildModels: Table-Structure not found");
             }
 
-            //var view = new DataView(this._structureTable);
-            //this._models = new Dictionary<string, Model>();
+            this.Models = new Dictionary<string, Model>();
 
-            //foreach (string name in this._tableNames)
-            //{
-            //    view.RowFilter = string.Format("TABLE_NAME = '{0}'", name);
-            //    this._models.Add(name.ToUpper(), new Db.Model(this, view.ToTable()));
-            //}
+            foreach (var name in this.TableNames)
+            {
+                var columns = this.StructureTable
+                                      .Rows
+                                      .Where(row => row.Item("TABLE_NAME").ToString() == name)
+                                      .ToArray();
+                this.Models.Add(name.ToUpper(), new Xb.Db.Model(this, columns));
+            }
         }
 
 
-        ///// <summary>
-        ///// Get Model of Table
-        ///// 渡し値テーブル名のモデルインスタンスを取得する。
-        ///// </summary>
-        ///// <param name="tableName"></param>
-        ///// <returns></returns>
-        ///// <remarks></remarks>
-        //public Xb.Db.Model GetModel(string tableName)
-        //{
-        //    tableName = tableName.ToUpper();
-
-        //    if (!this._models.ContainsKey(tableName))
-        //    {
-        //        Xb.Util.Out("Xb.Db.GetModel: Table not found");
-        //        throw new ArgumentException("Table not found");
-        //    }
-
-        //    return this._models[tableName];
-        //}
-
-
         /// <summary>
-        /// Get Quoted-String
-        /// 文字列項目のクォートラップ処理
+        /// Get Model of Table
+        /// 渡し値テーブル名のモデルインスタンスを取得する。
         /// </summary>
-        /// <param name="text"></param>
+        /// <param name="tableName"></param>
         /// <returns></returns>
-        /// <remarks>
-        /// for MsSqlServer, SqLite. override on Mysql
-        /// 標準をSqlServer/SQLite風クォートにセット。MySQLではOverrideする。
-        /// </remarks>
-        public virtual string Quote(string text)
+        /// <remarks></remarks>
+        public Xb.Db.Model GetModel(string tableName)
         {
-            return Xb.Str.SqlQuote(text);
+            tableName = tableName.ToUpper();
+
+            if (!this.Models.ContainsKey(tableName))
+            {
+                Xb.Util.Out("Xb.Db.GetModel: Table not found");
+                throw new ArgumentException("Xb.Db.GetModel: Table not found");
+            }
+
+            return this.Models[tableName];
         }
 
 
@@ -330,7 +280,7 @@ namespace Xb.Db
         /// for MsSqlServer, SqLite. override on Mysql
         /// 標準をSqlServer/SQLite風クォートにセット。MySQLではOverrideする。
         /// </remarks>
-        public virtual string Quote(string text, LikeMarkPosition likeMarkPos)
+        public virtual string Quote(string text, LikeMarkPosition likeMarkPos = LikeMarkPosition.None)
         {
             switch (likeMarkPos)
             {
@@ -557,13 +507,13 @@ namespace Xb.Db
             {
                 //now on transaction, exit. Do NOT nesting.
                 //トランザクションの入れ子を避ける。
-                if (this._isInTransaction)
+                if (this.IsInTransaction)
                     return;
 
                 //begin transaction
                 this.Execute(this.TranCmdBegin);
 
-                this._isInTransaction = true;
+                this.IsInTransaction = true;
             }
             catch (Exception ex)
             {
@@ -584,13 +534,13 @@ namespace Xb.Db
         {
             try
             {
-                if (!this._isInTransaction)
+                if (!this.IsInTransaction)
                     throw new InvalidOperationException("Xb.Db.DbBase.CommitTransaction: transanction not exist");
 
                 //Commit transaction
                 this.Execute(this.TranCmdCommit);
 
-                this._isInTransaction = false;
+                this.IsInTransaction = false;
             }
             catch (Exception ex)
             {
@@ -611,13 +561,13 @@ namespace Xb.Db
         {
             try
             {
-                if (!this._isInTransaction)
+                if (!this.IsInTransaction)
                     throw new InvalidOperationException("Xb.Db.DbBase.RollbackTransaction: transanction not exist");
 
                 //Rollback transaction
                 this.Execute(this.TranCmdRollback);
 
-                this._isInTransaction = false;
+                this.IsInTransaction = false;
             }
             catch (Exception ex)
             {
@@ -632,19 +582,21 @@ namespace Xb.Db
         /// Reset transaction
         /// トランザクションを初期化する
         /// </summary>
+        /// <param name="doRollback">no rollback, flag init only</param>
         /// <returns></returns>
         /// <remarks></remarks>
-        protected virtual void ResetTransaction()
+        protected virtual void ResetTransaction(bool doRollback = true)
         {
-            try
+            Xb.Util.Out("Xb.Db.DbBase ResetTransaction");
+
+            if (doRollback)
             {
-                Xb.Util.Out("Xb.Db.DbBase ResetTransaction");
-                this.Execute(this.TranCmdRollback);
+                try
+                { this.Execute(this.TranCmdRollback); }
+                catch (Exception) { }
             }
-            catch (Exception)
-            {
-            }
-            this._isInTransaction = false;
+
+            this.IsInTransaction = false;
         }
 
 

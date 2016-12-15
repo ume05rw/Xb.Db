@@ -22,7 +22,8 @@ namespace TestXb
                                      , MsSqlBase.UserId
                                      , MsSqlBase.Password
                                      , MsSqlBase.Server
-                                     , true);
+                                     , ""
+                                     , false);
             }
             catch (Exception ex)
             {
@@ -43,7 +44,10 @@ namespace TestXb
 
             Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), db.Encoding);
             Assert.IsFalse(db.IsInTransaction);
-            Assert.AreEqual(3, db.TableNames.Count);
+
+            //モデル生成フラグがOFFなので、テーブル構造を取得していない。
+            Assert.AreEqual(0, db.TableNames.Length);
+            Assert.AreEqual(0, db.Models.Count);
 
             db.Dispose();
             this.Out("CreateTest End.");

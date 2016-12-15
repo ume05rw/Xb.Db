@@ -206,11 +206,11 @@ namespace Xb.Db
         /// <param name="tableInfo"></param>
         /// <remarks></remarks>
         public Model(Db.DbBase db
-                   , ResultTable tableInfo)
+                   , Xb.Db.ResultRow[] infoRows)
         {
-            if (tableInfo == null
-                || tableInfo.RowCount <= 0
-                || tableInfo.ColumnCount <= 0)
+            if (infoRows == null
+                || infoRows.Length <= 0
+                || infoRows[0].Table.ColumnCount <= 0)
             {
                 Xb.Util.Out("Xb.Db.Model.New: Table infomation not found.");
                 throw new ArgumentException("Xb.Db.Model.New: Table infomation not found.");
@@ -219,14 +219,14 @@ namespace Xb.Db
             //get Xb.Db.DbBase ref.
             this._db = db;
 
-            this._tableName = tableInfo.Rows[0].Item("TABLE_NAME").ToString();
-            this._columns = new Xb.Db.Model.Column[tableInfo.RowCount];
+            this._tableName = infoRows[0].Item("TABLE_NAME").ToString();
+            this._columns = new Xb.Db.Model.Column[infoRows.Length];
             var pkeyColumns = new List<Xb.Db.Model.Column>();
 
             //loop column count
-            for (var i = 0; i < tableInfo.Rows.Length; i++)
+            for (var i = 0; i < infoRows.Length; i++)
             {
-                var typeString = tableInfo.Rows[i].Item("TYPE").ToString().ToUpper();
+                var typeString = infoRows[i].Item("TYPE").ToString().ToUpper();
                 var maxInteger = 0;
                 var maxDecimal = 0;
                 var maxLength = 0;
@@ -235,8 +235,8 @@ namespace Xb.Db
                 if (_typesOfNumber.Contains(typeString))
                 {
                     type = ColumnType.Number;
-                    maxInteger = int.Parse(tableInfo.Rows[i].Item("NUM_PREC").ToString());
-                    maxDecimal = int.Parse(tableInfo.Rows[i].Item("NUM_SCALE").ToString());
+                    maxInteger = int.Parse(infoRows[i].Item("NUM_PREC").ToString());
+                    maxDecimal = int.Parse(infoRows[i].Item("NUM_SCALE").ToString());
                     maxInteger -= maxDecimal;
                     maxLength = maxInteger
                                 + maxDecimal
@@ -249,7 +249,7 @@ namespace Xb.Db
                     type = ColumnType.String;
 
                     //TODO: MySQL-LongText型のような巨大なテキスト型のとき、文字数制限をしないようにする。
-                    if (!int.TryParse(tableInfo.Rows[i].Item("CHAR_LENGTH").ToString(), out maxLength))
+                    if (!int.TryParse(infoRows[i].Item("CHAR_LENGTH").ToString(), out maxLength))
                     {
                         maxLength = int.MaxValue;
                     }
@@ -273,19 +273,18 @@ namespace Xb.Db
                     maxDecimal = -1;
                 }
 
-                var isPkey = (tableInfo.Rows[i].Item("IS_PRIMARY_KEY").ToString() == "1");
+                var isPkey = (infoRows[i].Item("IS_PRIMARY_KEY").ToString() == "1");
 
                 //DataTable上の型都合で、"1"と"true"と2種類取れてしまうため、整形する。
-                var nullable = (tableInfo.Rows[i].Item("IS_NULLABLE").ToString().ToLower().Replace("true", "1") == "1");
+                var nullable = (infoRows[i].Item("IS_NULLABLE").ToString().ToLower().Replace("true", "1") == "1");
 
-                this._columns[i] = new Xb.Db.Model.Column(tableInfo.Rows[i].Item("COLUMN_NAME").ToString(),
-                                                          maxLength,
-                                                          maxInteger,
-                                                          maxDecimal,
-                                                          type,
-                                                          isPkey,
-                                                          nullable,
-                                                          this._db.Encoding);
+                this._columns[i] = new Xb.Db.Model.Column(infoRows[i].Item("COLUMN_NAME").ToString()
+                                                        , maxLength
+                                                        , maxInteger
+                                                        , maxDecimal
+                                                        , type
+                                                        , isPkey
+                                                        , nullable);
 
                 if (isPkey)
                 {
@@ -296,6 +295,17 @@ namespace Xb.Db
             this._templateTable = this._db.Query($"SELECT * FROM {this._tableName} WHERE 1 = 0 ");
 
             this._pkeyColumns = pkeyColumns.ToArray();
+        }
+
+
+        /// <summary>
+        /// Set string encoding (for string size validation)
+        /// </summary>
+        /// <param name="encoding"></param>
+        public void SetEncoding(System.Text.Encoding encoding)
+        {
+            foreach (var column in this.Columns)
+                column.Encoding = encoding;
         }
 
 

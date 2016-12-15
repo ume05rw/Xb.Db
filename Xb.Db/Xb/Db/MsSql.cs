@@ -16,37 +16,6 @@ namespace Xb.Db
     public class MsSql : Xb.Db.DbBase
     {
         /// <summary>
-        /// transaction begin command
-        /// トランザクション開始SQLコマンド
-        /// </summary>
-        private new string TranCmdBegin = "BEGIN TRANSACTION";
-
-        /// <summary>
-        /// transaction commit command
-        /// トランザクション確定SQLコマンド
-        /// </summary>
-        private new string TranCmdCommit = "COMMIT TRANSACTION";
-
-        /// <summary>
-        /// transanction rollback command
-        /// トランザクションロールバックSQLコマンド
-        /// </summary>
-        private new string TranCmdRollback = "ROLLBACK TRANSACTION";
-
-        /// <summary>
-        /// 1 record selection query template
-        /// レコード存在検証SQLテンプレート
-        /// </summary>
-        private new string SqlFind = "SELECT TOP(1) * FROM {0} WHERE {1} ";
-
-        /// <summary>
-        /// Connection
-        /// DBコネクション
-        /// </summary>
-        private new SqlConnection Connection;
-
-
-        /// <summary>
         /// Constructor
         /// コンストラクタ
         /// </summary>
@@ -54,34 +23,37 @@ namespace Xb.Db
         /// <param name="user"></param>
         /// <param name="password"></param>
         /// <param name="address"></param>
-        /// <param name="isBuildStructureModels"></param>
+        /// <param name="isBuildModels"></param>
         /// <param name="additionalString"></param>
         /// <param name="encoding"></param>
         /// <remarks></remarks>
         public MsSql(string name
-                    ,string user = "sa"
-                    ,string password = "sa"
-                    ,string address = "localhost"
-                    ,bool isBuildStructureModels = true
-                    ,string additionalString = ""
-                    ,Encoding encoding = null)
+                   , string user = "sa"
+                   , string password = "sa"
+                   , string address = "localhost"
+                   , string additionalString = ""
+                   , bool isBuildModels = true
+                   , Encoding encoding = null)
             : base(name
-                  ,user
-                  ,password
-                  ,address
-                  ,additionalString
-                  ,encoding)
+                 , user
+                 , password
+                 , address
+                 , additionalString
+                 , isBuildModels
+                 , encoding)
         {
-            base.TranCmdBegin = this.TranCmdBegin;
-            base.TranCmdCommit = this.TranCmdCommit;
-            base.TranCmdRollback = this.TranCmdRollback;
-            base.SqlFind = this.SqlFind;
-            this._encoding = encoding ?? Encoding.GetEncoding("Shift_JIS");
+            this.TranCmdBegin = "BEGIN TRANSACTION";
+            this.TranCmdCommit = "COMMIT TRANSACTION";
+            this.TranCmdRollback = "ROLLBACK TRANSACTION";
+            this.SqlFind = "SELECT TOP(1) * FROM {0} WHERE {1} ";
+            this.Encoding = encoding ?? Encoding.GetEncoding("Shift_JIS");
 
-            if (isBuildStructureModels)
+            if (isBuildModels)
             {
-                //Get Table-Structures
-                this.GetStructure();
+                foreach (var model in this.Models.Values)
+                {
+                    model.SetEncoding(this.Encoding);
+                }
             }
         }
 
@@ -96,13 +68,13 @@ namespace Xb.Db
             //build connection string
             string connectionString
                 = string.Format("server={0};user id={1}; password={2}; database={3}; pooling=false{4}"
-                               , this._address
-                               , this._user
-                               , this._password
-                               , this._name
-                               , string.IsNullOrEmpty(this._additionalConnectionString)
+                               , this.Address
+                               , this.User
+                               , this.Password
+                               , this.Name
+                               , string.IsNullOrEmpty(this.AdditionalConnectionString)
                                     ? ""
-                                    : "; " + this._additionalConnectionString);
+                                    : "; " + this.AdditionalConnectionString);
 
             try
             {
@@ -119,10 +91,7 @@ namespace Xb.Db
             }
 
             //init transaction
-            this._isInTransaction = false;
-
-            //set connection refference
-            base.Connection = this.Connection;
+            this.ResetTransaction(false);
         }
 
 
@@ -145,7 +114,7 @@ namespace Xb.Db
             sql.AppendFormat(" ORDER BY ");
             sql.AppendFormat("     NAME ");
             var rt1 = this.Query(sql.ToString());
-            this._tableNames = rt1.Rows.Select(row => row.Item("TABLE_NAME").ToString()).ToList();
+            this.TableNames = rt1.Rows.Select(row => row.Item("TABLE_NAME").ToString()).ToArray();
 
 
             //Get Column info
@@ -186,10 +155,7 @@ namespace Xb.Db
             sql.AppendFormat(" ORDER BY ");
             sql.AppendFormat("     TBL.NAME ASC ");
             sql.AppendFormat("     ,COL.COLUMN_ID ASC ");
-            this._structureTable = this.Query(sql.ToString());
-
-            //build Models of Tables
-            this.BuildModels();
+            this.StructureTable = this.Query(sql.ToString());
         }
 
 
@@ -226,7 +192,7 @@ namespace Xb.Db
         {
             var result = new SqlCommand
             {
-                Connection = this.Connection
+                Connection = (SqlConnection)this.Connection
             };
 
             if (parameters != null
@@ -257,9 +223,9 @@ namespace Xb.Db
             try
             {
                 this.Execute(string.Format("BACKUP DATABASE {0} TO DISK = '{1}'  with INIT, NAME='{2}'"
-                                          ,this._name
+                                          ,this.Name
                                           ,fileName
-                                          ,this._name));
+                                          ,this.Name));
             }
             catch (Exception ex)
             {

@@ -97,7 +97,6 @@ namespace Xb.Db
             /// <param name="valType"></param>
             /// <param name="isPkey"></param>
             /// <param name="isNullable"></param>
-            /// <param name="encoding"></param>
             /// <remarks></remarks>
             public Column(string name
                         , int maxLength
@@ -105,8 +104,7 @@ namespace Xb.Db
                         , int maxDec
                         , ColumnType valType
                         , bool isPkey
-                        , bool isNullable
-                        , System.Text.Encoding encoding)
+                        , bool isNullable)
             {
                 this.Name = name;
                 this.MaxLength = maxLength;
@@ -115,7 +113,7 @@ namespace Xb.Db
                 this.Type = valType;
                 this.IsPrimaryKey = isPkey;
                 this.IsNullable = isNullable;
-                this.Encoding = encoding;
+                this.Encoding = System.Text.Encoding.UTF8;
             }
 
 
