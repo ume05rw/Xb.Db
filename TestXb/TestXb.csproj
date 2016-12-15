@@ -82,7 +82,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xb.Db\Xb.Db.STD1.3.csproj">
+    <ProjectReference Include="..\Xb.Db.STD1.3\Xb.Db.STD1.3.csproj">
       <Project>{e934d179-93cc-4890-86f6-2827d2d5cd61}</Project>
       <Name>Xb.Db.STD1.3</Name>
     </ProjectReference>

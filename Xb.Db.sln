@@ -3,9 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xb.Db.STD1.3", "Xb.Db\Xb.Db.STD1.3.csproj", "{E934D179-93CC-4890-86F6-2827D2D5CD61}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xb.Db.STD1.3", "Xb.Db.STD1.3\Xb.Db.STD1.3.csproj", "{E934D179-93CC-4890-86F6-2827D2D5CD61}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestXb", "TestXb\TestXb.csproj", "{3CC48E7F-D226-48F2-A365-AD7069FDAD38}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xb.Db", "Xb.Db", "{5FCEF051-732E-4AD4-BBEC-1D1F2C8B71C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xb.Db.MsSql", "Xb.Db.MsSql", "{543C3EFF-0F96-4AC8-91B1-14C2F0A8DF6B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xb.Db.MySql", "Xb.Db.MySql", "{20951C3F-26D1-48D4-82D7-27010B487C81}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xb.Db.Sqlite", "Xb.Db.Sqlite", "{269DC36C-89D2-44D2-AD8F-C64FCD049872}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +32,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E934D179-93CC-4890-86F6-2827D2D5CD61} = {5FCEF051-732E-4AD4-BBEC-1D1F2C8B71C5}
+		{3CC48E7F-D226-48F2-A365-AD7069FDAD38} = {543C3EFF-0F96-4AC8-91B1-14C2F0A8DF6B}
 	EndGlobalSection
 EndGlobal
