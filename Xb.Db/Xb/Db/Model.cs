@@ -679,8 +679,8 @@ namespace Xb.Db
         /// <param name="excludeColumnsOnUpdate"></param>
         /// <returns></returns>
         /// <remarks></remarks>
-        public Xb.Db.Model.Error[] ReplaceUpdate(ResultRow[] drsAfter
-                                               , ResultRow[] drsBefore = null
+        public Xb.Db.Model.Error[] ReplaceUpdate(List<ResultRow> drsAfter
+                                               , List<ResultRow> drsBefore = null
                                                , params string[] excludeColumnsOnUpdate)
         {
             var errors = new Xb.Db.Model.Error[] { };
@@ -699,7 +699,7 @@ namespace Xb.Db
             //compare Primary-Key, pick delete target.
             if (errors.Length <= 0
                 && drsBefore != null
-                && drsBefore.Length > 0)
+                && drsBefore.Count > 0)
             {
                 //before ResultRow loop
                 foreach (ResultRow rowBefore in drsBefore)

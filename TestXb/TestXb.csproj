@@ -71,6 +71,7 @@
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Xb\Db\MsSqlBase.cs" />
+    <Compile Include="Xb\Db\MsSqlModelTests.cs" />
     <Compile Include="Xb\Db\MsSqlTest.cs" />
   </ItemGroup>
   <ItemGroup>
