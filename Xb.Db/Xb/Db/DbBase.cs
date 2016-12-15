@@ -242,7 +242,7 @@ namespace Xb.Db
             {
                 var columns = this.StructureTable
                                       .Rows
-                                      .Where(row => row.Item("TABLE_NAME").ToString() == name)
+                                      .Where(row => row["TABLE_NAME"].ToString() == name)
                                       .ToArray();
                 this.Models.Add(name.ToUpper(), new Xb.Db.Model(this, columns));
             }

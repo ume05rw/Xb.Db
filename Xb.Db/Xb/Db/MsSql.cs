@@ -114,7 +114,7 @@ namespace Xb.Db
             sql.AppendFormat(" ORDER BY ");
             sql.AppendFormat("     NAME ");
             var rt1 = this.Query(sql.ToString());
-            this.TableNames = rt1.Rows.Select(row => row.Item("TABLE_NAME").ToString()).ToArray();
+            this.TableNames = rt1.Rows.Select(row => row["TABLE_NAME"].ToString()).ToArray();
 
 
             //Get Column info

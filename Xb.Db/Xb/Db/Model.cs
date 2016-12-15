@@ -198,14 +198,14 @@ namespace Xb.Db
             //get Xb.Db.DbBase ref.
             this._db = db;
 
-            this.TableName = infoRows[0].Item("TABLE_NAME").ToString();
+            this.TableName = infoRows[0]["TABLE_NAME"].ToString();
             this.Columns = new Xb.Db.Model.Column[infoRows.Length];
             var pkeyColumns = new List<Xb.Db.Model.Column>();
 
             //loop column count
             for (var i = 0; i < infoRows.Length; i++)
             {
-                var typeString = infoRows[i].Item("TYPE").ToString().ToUpper();
+                var typeString = infoRows[i]["TYPE"].ToString().ToUpper();
                 var maxInteger = 0;
                 var maxDecimal = 0;
                 var maxLength = 0;
@@ -214,8 +214,8 @@ namespace Xb.Db
                 if (TypesOfNumber.Contains(typeString))
                 {
                     type = ColumnType.Number;
-                    maxInteger = int.Parse(infoRows[i].Item("NUM_PREC").ToString());
-                    maxDecimal = int.Parse(infoRows[i].Item("NUM_SCALE").ToString());
+                    maxInteger = int.Parse(infoRows[i]["NUM_PREC"].ToString());
+                    maxDecimal = int.Parse(infoRows[i]["NUM_SCALE"].ToString());
                     maxInteger -= maxDecimal;
                     maxLength = maxInteger
                                 + maxDecimal
@@ -228,7 +228,7 @@ namespace Xb.Db
                     type = ColumnType.String;
 
                     //TODO: MySQL-LongText型のような巨大なテキスト型のとき、文字数制限をしないようにする。
-                    if (!int.TryParse(infoRows[i].Item("CHAR_LENGTH").ToString(), out maxLength))
+                    if (!int.TryParse(infoRows[i]["CHAR_LENGTH"].ToString(), out maxLength))
                     {
                         maxLength = int.MaxValue;
                     }
@@ -252,12 +252,12 @@ namespace Xb.Db
                     maxDecimal = -1;
                 }
 
-                var isPkey = (infoRows[i].Item("IS_PRIMARY_KEY").ToString() == "1");
+                var isPkey = (infoRows[i]["IS_PRIMARY_KEY"].ToString() == "1");
 
                 //DataTable上の型都合で、"1"と"true"と2種類取れてしまうため、整形する。
-                var nullable = (infoRows[i].Item("IS_NULLABLE").ToString().ToLower().Replace("true", "1") == "1");
+                var nullable = (infoRows[i]["IS_NULLABLE"].ToString().ToLower().Replace("true", "1") == "1");
 
-                this.Columns[i] = new Xb.Db.Model.Column(infoRows[i].Item("COLUMN_NAME").ToString()
+                this.Columns[i] = new Xb.Db.Model.Column(infoRows[i]["COLUMN_NAME"].ToString()
                                                         , maxLength
                                                         , maxInteger
                                                         , maxDecimal
@@ -413,10 +413,10 @@ namespace Xb.Db
                 if(!row.Table.Columns.Any(rc => rc.ColumnName == col.Name))
                     continue;
 
-                var errorType = col.Validate(row.Item(col.Name));
+                var errorType = col.Validate(row[col.Name]);
 
                 if (errorType != Db.Model.ErrorType.NoError)
-                    errors.Add(new Xb.Db.Model.Error(col.Name, this.NullFormat(row.Item(col.Name)), errorType));
+                    errors.Add(new Xb.Db.Model.Error(col.Name, this.NullFormat(row[col.Name]), errorType));
             }
 
             return errors.ToArray();
@@ -459,7 +459,7 @@ namespace Xb.Db
             foreach (Xb.Db.Model.Column col in this.PkeyColumns)
             {
                 var value = row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
-                                ? this.NullFormat(row.Item(col.Name))
+                                ? this.NullFormat(row[col.Name])
                                 : null;
                 wheres.Add(col.GetSqlFormula(value));
             }
@@ -501,7 +501,7 @@ namespace Xb.Db
             foreach (Xb.Db.Model.Column col in this.Columns)
                 colValues.Add(col.Name,
                               row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
-                                  ? this.NullFormat(row.Item(col.Name))
+                                  ? this.NullFormat(row[col.Name])
                                   : null);
 
             var targetColumns = this.Columns.Where(col => colNames.Contains(col.Name)).ToList();
@@ -552,7 +552,7 @@ namespace Xb.Db
             {
                 colValues.Add(col.Name,
                     row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
-                        ? this.NullFormat(row.Item(col.Name))
+                        ? this.NullFormat(row[col.Name])
                         : null);
 
                 if (keyColumns.Contains(col.Name))
@@ -653,14 +653,14 @@ namespace Xb.Db
             {
                 colValues.Add(col,
                               row.Table.Columns.Any(rc => rc.ColumnName == col)
-                                  ? this.NullFormat(row.Item(col))
+                                  ? this.NullFormat(row[col])
                                   : null);
             }
             
             var wheres = new List<string>();
             foreach (string col in keyColumns)
             {
-                wheres.Add(this.GetColumn(col).GetSqlFormula(row.Item(col)));
+                wheres.Add(this.GetColumn(col).GetSqlFormula(row[col]));
             }
 
             var sql = $"DELETE FROM {this.TableName} WHERE {string.Join(" AND ", wheres)}";
@@ -713,7 +713,7 @@ namespace Xb.Db
                         var isAllKeySame = true;
                         foreach (Xb.Db.Model.Column keyCol in this.PkeyColumns)
                         {
-                            if (this.NullFormat(rowBefore.Item(keyCol.Name)) == this.NullFormat(rowAfter.Item(keyCol.Name)))
+                            if (this.NullFormat(rowBefore[keyCol.Name]) == this.NullFormat(rowAfter[keyCol.Name]))
                                 continue;
 
                             //detect unmatch

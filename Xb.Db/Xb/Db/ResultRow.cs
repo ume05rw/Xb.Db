@@ -12,25 +12,45 @@ namespace Xb.Db
         private object[] _items;
         private ResultTable _table;
 
+        /// <summary>
+        /// 構造参照先ResultTable
+        /// </summary>
         public ResultTable Table => _table;
 
+        /// <summary>
+        /// 列要素インデクサ
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public object this[int index]
+        {
+            get { return this._items[index]; }
+            set { this._items[index] = value; }
+        }
+
+        /// <summary>
+        /// 列要素インデクサ
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public object this[string columnName]
+        {
+            get { return this._items[this._table.GetColumnIndex(columnName)];  }
+            set { this._items[this._table.GetColumnIndex(columnName)] = value; }
+        }
+
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="dataRecord"></param>
         public ResultRow(ResultTable table, IDataRecord dataRecord = null)
         {
             this._table = table;
             this._items = new object[this._table.ColumnCount];
 
             dataRecord?.GetValues(this._items);
-        }
-
-        public object Item(int index)
-        {
-            return this._items[index];
-        }
-
-
-        public object Item(string columnName)
-        {
-            return this._items[this._table.GetColumnIndex(columnName)];
         }
 
 
