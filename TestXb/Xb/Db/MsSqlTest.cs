@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestXb.Db;
 using Xb.Db;
@@ -285,6 +286,18 @@ namespace TestXb
             Assert.AreEqual(12345, rt.Rows[3].Item(2));
             Assert.AreEqual(DateTime.Parse("2016-12-13"), rt.Rows[3].Item(3));
 
+            rt = db.Query("SELECT * FROM Test WHERE COL_STR = 'NO-MATCH-ROW' ORDER BY COL_STR ");
+            Assert.IsFalse(rt == null);
+            Assert.AreEqual(4, rt.ColumnCount);
+            Assert.AreEqual(0, rt.RowCount);
+            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
+            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
+            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
+            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
+            Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
+            Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
+            Assert.AreEqual(3, rt.GetColumnIndex("COL_DATETIME"));
             db.Dispose();
             this.Out("QueryTest End.");
         }
@@ -296,6 +309,7 @@ namespace TestXb
             var db = this.GetDb();
 
             var classRows = db.Query<TestTableType>("SELECT * FROM Test WHERE COL_STR LIKE '%B%' ORDER BY COL_STR ");
+            Assert.AreEqual(4, classRows.Length);
 
             Assert.AreEqual("ABC", classRows[0].COL_STR);
             Assert.AreEqual((decimal)1, classRows[0].COL_DEC);
@@ -317,10 +331,12 @@ namespace TestXb
             Assert.AreEqual(12345, classRows[3].COL_INT);
             Assert.AreEqual(DateTime.Parse("2016-12-13"), classRows[3].COL_DATETIME);
 
+            classRows = db.Query<TestTableType>("SELECT * FROM Test WHERE COL_STR = 'NO-MATCH-ROW' ORDER BY COL_STR ");
+            Assert.AreEqual(0, classRows.Length);
+
             db.Dispose();
             this.Out("QueryTTest End.");
         }
-
         private class TestTableType
         {
             public string COL_STR { get; set; }
@@ -328,6 +344,111 @@ namespace TestXb
             public int COL_INT { get; set; }
             public DateTime COL_DATETIME { get; set; }
         }
+
+        [TestMethod()]
+        public void FindTest()
+        {
+            this.Out("FindTest Start.");
+            var db = this.GetDb();
+
+            var rr = db.Find("Test3", "COL_STR = 'ABC'");
+            Assert.IsFalse(rr == null);
+            Assert.AreEqual("ABC", rr.Item("COL_STR"));
+            Assert.IsTrue((new int[] {1, 2, 3}).Contains((int)rr.Item("COL_INT")));
+            Assert.AreEqual((decimal)1, rr.Item("COL_DEC"));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rr.Item("COL_DATETIME"));
+
+            rr = db.Find("Test", "COL_DATETIME = '2000-12-31'");
+            Assert.IsFalse(rr == null);
+            Assert.AreEqual("KEY", rr.Item("COL_STR"));
+            Assert.AreEqual(DBNull.Value, rr.Item("COL_INT"));
+            Assert.AreEqual((decimal)0, rr.Item("COL_DEC"));
+            Assert.AreEqual(DateTime.Parse("2000-12-31"), rr.Item("COL_DATETIME"));
+
+            rr = db.Find("Test", "COL_DATETIME = '2000-12-30'");
+            Assert.IsTrue(rr == null);
+
+            db.Dispose();
+            this.Out("FindTest End.");
+        }
+
+        [TestMethod()]
+        public void FindAllTest()
+        {
+            this.Out("FindAllTest Start.");
+            var db = this.GetDb();
+
+            var rt = db.FindAll("Test"
+                              , "COL_STR LIKE '%B%'"
+                              , "COL_STR");
+            //Query("SELECT * FROM Test WHERE COL_STR LIKE '%B%' ORDER BY COL_STR ");
+            Assert.AreEqual(4, rt.ColumnCount);
+            Assert.AreEqual(4, rt.RowCount);
+            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
+            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
+            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
+            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
+            Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
+            Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
+            Assert.AreEqual(3, rt.GetColumnIndex("COL_DATETIME"));
+
+            Assert.AreEqual("ABC", rt.Rows[0].Item("COL_STR"));
+            Assert.AreEqual((decimal)1, rt.Rows[0].Item("COL_DEC"));
+            Assert.AreEqual(1, rt.Rows[0].Item("COL_INT"));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rt.Rows[0].Item("COL_DATETIME"));
+            Assert.AreEqual("ABC", rt.Rows[0].Item(0));
+            Assert.AreEqual((decimal)1, rt.Rows[0].Item(1));
+            Assert.AreEqual(1, rt.Rows[0].Item(2));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rt.Rows[0].Item(3));
+
+            Assert.AreEqual("ABC", rt.Rows[1].Item("COL_STR"));
+            Assert.AreEqual((decimal)1, rt.Rows[1].Item("COL_DEC"));
+            Assert.AreEqual(1, rt.Rows[1].Item("COL_INT"));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rt.Rows[1].Item("COL_DATETIME"));
+            Assert.AreEqual("ABC", rt.Rows[1].Item(0));
+            Assert.AreEqual((decimal)1, rt.Rows[1].Item(1));
+            Assert.AreEqual(1, rt.Rows[1].Item(2));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rt.Rows[1].Item(3));
+
+            Assert.AreEqual("ABC", rt.Rows[2].Item("COL_STR"));
+            Assert.AreEqual((decimal)1, rt.Rows[2].Item("COL_DEC"));
+            Assert.AreEqual(1, rt.Rows[2].Item("COL_INT"));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rt.Rows[2].Item("COL_DATETIME"));
+            Assert.AreEqual("ABC", rt.Rows[2].Item(0));
+            Assert.AreEqual((decimal)1, rt.Rows[2].Item(1));
+            Assert.AreEqual(1, rt.Rows[2].Item(2));
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), rt.Rows[2].Item(3));
+
+            Assert.AreEqual("BB", rt.Rows[3].Item("COL_STR"));
+            Assert.AreEqual((decimal)12.345, rt.Rows[3].Item("COL_DEC"));
+            Assert.AreEqual(12345, rt.Rows[3].Item("COL_INT"));
+            Assert.AreEqual(DateTime.Parse("2016-12-13"), rt.Rows[3].Item("COL_DATETIME"));
+            Assert.AreEqual("BB", rt.Rows[3].Item(0));
+            Assert.AreEqual((decimal)12.345, rt.Rows[3].Item(1));
+            Assert.AreEqual(12345, rt.Rows[3].Item(2));
+            Assert.AreEqual(DateTime.Parse("2016-12-13"), rt.Rows[3].Item(3));
+
+            rt = db.FindAll("Test"
+                          , "COL_STR = 'NO-MATCH-ROW' "
+                          , "COL_STR");
+
+            Assert.IsFalse(rt == null);
+            Assert.AreEqual(4, rt.ColumnCount);
+            Assert.AreEqual(0, rt.RowCount);
+            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
+            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
+            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
+            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
+            Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
+            Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
+            Assert.AreEqual(3, rt.GetColumnIndex("COL_DATETIME"));
+
+            db.Dispose();
+            this.Out("FindAllTest End.");
+        }
+
 
         [TestMethod()]
         public void TransactionTest()

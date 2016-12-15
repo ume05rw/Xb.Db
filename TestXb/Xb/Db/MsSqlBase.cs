@@ -94,10 +94,6 @@ namespace TestXb.Db
             this.Exec(string.Format(insertTpl, "Test3", "'CC'", 12.345, 12345, "'2016-12-13'"));
             this.Exec(string.Format(insertTpl, "Test3", "'KEY'", "NULL", 0, "'2000-12-31'"));
 
-
-
-
-
             this.Out("MsSqlTestBase.Constructor End.");
         }
 

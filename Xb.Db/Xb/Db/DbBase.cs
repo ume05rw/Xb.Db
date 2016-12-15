@@ -202,7 +202,7 @@ namespace Xb.Db
         /// </summary>
         public DbBase()
         {
-            throw new InvalidOperationException("Execute only subclass");
+            throw new InvalidOperationException("Xb.Db.DbBase.Constructor: Not permitted");
         }
 
 
@@ -242,8 +242,8 @@ namespace Xb.Db
         /// <remarks></remarks>
         protected virtual void Open()
         {
-            Xb.Util.Out("Xb.Db.Open: Execute only subclass");
-            throw new InvalidOperationException("Execute only subclass");
+            Xb.Util.Out("Xb.Db.DbBase.Open: Execute only subclass");
+            throw new InvalidOperationException("Xb.Db.DbBase.Open: Execute only subclass");
         }
 
 
@@ -254,8 +254,8 @@ namespace Xb.Db
         /// <remarks></remarks>
         protected virtual void GetStructure()
         {
-            Xb.Util.Out("Xb.Db.GetStructure: Execute only subclass");
-            throw new InvalidOperationException("Execute only subclass");
+            Xb.Util.Out("Xb.Db.DbBase.GetStructure: Execute only subclass");
+            throw new InvalidOperationException("Xb.Db.DbBase.GetStructure: Execute only subclass");
         }
 
 
@@ -269,7 +269,7 @@ namespace Xb.Db
             if (this._tableNames == null || this._structureTable == null)
             {
                 Xb.Util.Out("Xb.Db.BuildModels: Table-Structure not found");
-                throw new InvalidOperationException("Table-Structure not found");
+                throw new InvalidOperationException("Xb.Db.BuildModels: Table-Structure not found");
             }
 
             //var view = new DataView(this._structureTable);
@@ -361,7 +361,7 @@ namespace Xb.Db
         protected virtual DbCommand GetCommand(DbParameter[] parameters = null)
         {
             Xb.Util.Out("Xb.Db.GetCommand: Execute only subclass");
-            throw new InvalidOperationException("Execute only subclass");
+            throw new InvalidOperationException("Xb.Db.GetCommand: Execute only subclass");
         }
 
 
@@ -387,7 +387,7 @@ namespace Xb.Db
             catch (Exception ex)
             {
                 Xb.Util.Out(ex);
-                throw new ArgumentException("Xb.Db.Execute fail \r\n" + ex.Message + "\r\n" + sql);
+                throw new ArgumentException("Xb.Db.DbBase.Execute: failure \r\n" + ex.Message + "\r\n" + sql);
             }
         }
 
@@ -414,61 +414,8 @@ namespace Xb.Db
             catch (Exception ex)
             {
                 Xb.Util.Out(ex);
-                throw new Exception("Xb.Db.GetReader fail \r\n" + ex.Message + "\r\n" + sql);
+                throw new Exception("Xb.Db.DbBase.GetReader: failure \r\n" + ex.Message + "\r\n" + sql);
             }
-        }
-
-
-        /// <summary>
-        /// Get 1 row matched
-        /// 条件に合致した最初の行を返す
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="whereString"></param>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public virtual ResultRow Find(string tableName, string whereString)
-        {
-            if (whereString == null)
-                whereString = "";
-
-            var sql = string.Format(this.SqlFind, tableName, whereString);
-            var rt = this.Query(sql);
-
-            //No-Data -> Nothing
-            if (rt == null || rt.RowCount <= 0)
-                return null;
-
-            //return first row
-            return rt.Rows[0];
-        }
-
-
-        /// <summary>
-        /// Get all rows matched
-        /// 条件に合致した全行データを返す。
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="whereString"></param>
-        /// <param name="orderString"></param>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public virtual ResultTable FindAll(string tableName
-                                         , string whereString = null
-                                         , string orderString = null)
-        {
-            whereString = whereString ?? "";
-            orderString = orderString ?? "";
-
-            var sql = $" SELECT * FROM {tableName} ";
-
-            if (!string.IsNullOrEmpty(whereString))
-                sql += $" WHERE {whereString}";
-
-            if (!string.IsNullOrEmpty(orderString))
-                sql += $" ORDER BY {orderString}";
-
-            return this.Query(sql);
         }
 
 
@@ -491,7 +438,7 @@ namespace Xb.Db
             catch (Exception ex)
             {
                 Xb.Util.Out(ex);
-                throw new Exception("Xb.Db.Query fail \r\n" + ex.Message + "\r\n" + sql);
+                throw new Exception("Xb.Db.DbBase.Query: failure \r\n" + ex.Message + "\r\n" + sql);
             }
         }
 
@@ -540,8 +487,61 @@ namespace Xb.Db
             catch (Exception ex)
             {
                 Xb.Util.Out(ex);
-                throw new Exception("Xb.Db.Query<T> fail \r\n" + ex.Message + "\r\n" + sql);
+                throw new Exception("Xb.Db.DbBase.Query<T>: failure \r\n" + ex.Message + "\r\n" + sql);
             }
+        }
+
+
+        /// <summary>
+        /// Get first matched row
+        /// 条件に合致した最初の行を返す
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="whereString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual ResultRow Find(string tableName, string whereString)
+        {
+            if (whereString == null)
+                whereString = "";
+
+            var sql = string.Format(this.SqlFind, tableName, whereString);
+            var rt = this.Query(sql);
+
+            //No-Data -> Nothing
+            if (rt == null || rt.RowCount <= 0)
+                return null;
+
+            //return first row
+            return rt.Rows[0];
+        }
+
+
+        /// <summary>
+        /// Get matched all rows
+        /// 条件に合致した全行データを返す。
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="whereString"></param>
+        /// <param name="orderString"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public virtual ResultTable FindAll(string tableName
+                                         , string whereString = null
+                                         , string orderString = null)
+        {
+            whereString = whereString ?? "";
+            orderString = orderString ?? "";
+
+            var sql = $" SELECT * FROM {tableName} ";
+
+            if (!string.IsNullOrEmpty(whereString))
+                sql += $" WHERE {whereString}";
+
+            if (!string.IsNullOrEmpty(orderString))
+                sql += $" ORDER BY {orderString}";
+
+            return this.Query(sql);
         }
 
 
@@ -585,7 +585,7 @@ namespace Xb.Db
             try
             {
                 if (!this._isInTransaction)
-                    throw new InvalidOperationException("transanction not exist");
+                    throw new InvalidOperationException("Xb.Db.DbBase.CommitTransaction: transanction not exist");
 
                 //Commit transaction
                 this.Execute(this.TranCmdCommit);
@@ -612,7 +612,7 @@ namespace Xb.Db
             try
             {
                 if (!this._isInTransaction)
-                    throw new InvalidOperationException("transanction not exist");
+                    throw new InvalidOperationException("Xb.Db.DbBase.RollbackTransaction: transanction not exist");
 
                 //Rollback transaction
                 this.Execute(this.TranCmdRollback);
@@ -657,7 +657,7 @@ namespace Xb.Db
         public virtual bool BackupDb(string fileName)
         {
             Xb.Util.Out("Xb.Db.DbBase.BackupDb: Execute only subclass");
-            throw new InvalidOperationException("Execute only subclass");
+            throw new InvalidOperationException("Xb.Db.DbBase.BackupDb: Execute only subclass");
         }
 
 
@@ -674,7 +674,7 @@ namespace Xb.Db
             if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(fileName)))
             {
                 Xb.Util.Out("Xb.Db.DbBase.RemoveIfExints: File-Path not found");
-                throw new ArgumentException("File-Path not found");
+                throw new ArgumentException("Xb.Db.DbBase.BackupDb: File-Path not found");
             }
 
             if (!System.IO.File.Exists(fileName))
