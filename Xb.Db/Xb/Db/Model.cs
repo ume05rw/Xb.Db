@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace Xb.Db
 {
-
     /// <summary>
     /// Model Class
     /// モデルクラス

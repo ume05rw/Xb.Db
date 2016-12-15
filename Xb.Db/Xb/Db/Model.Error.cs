@@ -12,8 +12,6 @@ namespace Xb.Db
         /// <remarks></remarks>
         public class Error
         {
-            private readonly string _customMessage;
-
             /// <summary>
             /// Name
             /// エラー名
@@ -31,6 +29,12 @@ namespace Xb.Db
             /// エラー型
             /// </summary>
             public ErrorType Type { get; }
+
+            /// <summary>
+            /// Customize error message
+            /// カスタマイズエラーメッセージ
+            /// </summary>
+            private readonly string _customMessage;
 
             /// <summary>
             /// Message
