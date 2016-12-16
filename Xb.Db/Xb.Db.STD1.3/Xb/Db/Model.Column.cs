@@ -11,13 +11,13 @@ namespace Xb.Db
         /// カラム情報クラス
         /// </summary>
         /// <remarks></remarks>
-        public class Column
+        public class Column : IDisposable
         {
             /// <summary>
             /// Name
             /// カラム名
             /// </summary>
-            public string Name { get; }
+            public string Name { get; private set; }
 
             /// <summary>
             /// Max charactor length
@@ -56,10 +56,16 @@ namespace Xb.Db
             public bool IsNullable { get; }
 
             /// <summary>
-            /// String encoding
-            /// 文字列値のときのエンコード形式
+            /// Belinging Xb.Db.Model
+            /// 所属元Xb.Db.Model
             /// </summary>
-            public System.Text.Encoding Encoding { get; set; }
+            protected Xb.Db.Model Model { get; set; }
+
+            ///// <summary>
+            ///// String encoding
+            ///// 文字列値のときのエンコード形式
+            ///// </summary>
+            //public System.Text.Encoding Encoding { get; set; }
 
 
             /// <summary>
@@ -80,7 +86,8 @@ namespace Xb.Db
                         , int maxDec
                         , ColumnType valType
                         , bool isPkey
-                        , bool isNullable)
+                        , bool isNullable
+                        , Xb.Db.Model model)
             {
                 this.Name = name;
                 this.MaxLength = maxLength;
@@ -89,7 +96,7 @@ namespace Xb.Db
                 this.Type = valType;
                 this.IsPrimaryKey = isPkey;
                 this.IsNullable = isNullable;
-                this.Encoding = System.Text.Encoding.UTF8;
+                this.Model = model;
             }
 
 
@@ -122,7 +129,7 @@ namespace Xb.Db
                 {
                     case ColumnType.String:
                         //length
-                        if (this.Encoding.GetBytes(valueString).Length > this.MaxLength)
+                        if (this.Model.Encoding.GetBytes(valueString).Length > this.MaxLength)
                         {
                             return ErrorType.LengthOver;
                         }
@@ -233,6 +240,29 @@ namespace Xb.Db
                                      this.GetSqlValue(value),
                                      addBrackets ? ")" : "");
             }
+
+            #region IDisposable Support
+            private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                        this.Name = null;
+                        this.Model = null;
+                    }
+
+                    disposedValue = true;
+                }
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+            #endregion
         }
     }
 }

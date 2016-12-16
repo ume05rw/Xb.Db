@@ -24,7 +24,12 @@ namespace TestsXb
             this.Out("MsSqlModelTests.Constructor Start.");
             try
             {
-                this._db = new Xb.Db.MsSql("MsSqlTests", "sa", "sa", "localhost", "", true);
+                this._db = new Xb.Db.MsSql(MsSqlBase.NameTarget
+                                         , MsSqlBase.UserId
+                                         , MsSqlBase.Password
+                                         , MsSqlBase.Server
+                                         , ""
+                                         , true);
             }
             catch (Exception ex)
             {
@@ -39,14 +44,29 @@ namespace TestsXb
         }
 
         [TestMethod()]
-        public void MsSqlModel()
+        public void ConstructorTest()
         {
-            this.Out("MsSqlModel Start.");
+            this.Out("ConstructorTest Start.");
 
             Assert.AreEqual("Test", this._testModel.TableName);
+            Assert.AreEqual(0, this._testModel.PkeyColumns.Length);
+            Assert.AreEqual(4, this._testModel.Columns.Length);
+            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), this._testModel.Encoding);
 
+            Assert.AreEqual("Test2", this._test2Model.TableName);
+            Assert.AreEqual(1, this._test2Model.PkeyColumns.Length);
+            Assert.AreEqual("COL_STR", this._test2Model.PkeyColumns[0].Name);
+            Assert.AreEqual(4, this._test2Model.Columns.Length);
+            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), this._test2Model.Encoding);
 
-            this.Out("MsSqlModel Emd.");
+            Assert.AreEqual("Test3", this._test3Model.TableName);
+            Assert.AreEqual(2, this._test3Model.PkeyColumns.Length);
+            Assert.AreEqual("COL_STR", this._test3Model.PkeyColumns[0].Name);
+            Assert.AreEqual("COL_INT", this._test3Model.PkeyColumns[1].Name);
+            Assert.AreEqual(4, this._test3Model.Columns.Length);
+            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), this._test3Model.Encoding);
+
+            this.Out("ConstructorTest Emd.");
         }
 
         [TestMethod()]
@@ -65,7 +85,6 @@ namespace TestsXb
             Assert.AreEqual(3, col.MaxDecimal);
             Assert.IsTrue(col.IsNullable);
             Assert.IsFalse(col.IsPrimaryKey);
-
         }
 
         [TestMethod()]

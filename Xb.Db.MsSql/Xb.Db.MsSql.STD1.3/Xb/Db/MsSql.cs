@@ -51,7 +51,7 @@ namespace Xb.Db
             if (isBuildModels)
             {
                 foreach (var model in this.Models.Values)
-                    model.SetEncoding(this.Encoding);
+                    model.Encoding = this.Encoding;
             }
         }
 

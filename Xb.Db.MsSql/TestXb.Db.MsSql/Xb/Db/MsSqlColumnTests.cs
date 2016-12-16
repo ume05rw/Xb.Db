@@ -48,7 +48,6 @@ namespace TestsXb
             Assert.AreEqual(Xb.Db.Model.ColumnType.String, col.Type);
             Assert.IsFalse(col.IsPrimaryKey);
             Assert.IsFalse(col.IsNullable);
-            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), col.Encoding);
 
             col = this._test3Model.GetColumn("COL_STR");
             Assert.AreEqual("COL_STR", col.Name);
@@ -58,7 +57,6 @@ namespace TestsXb
             Assert.AreEqual(Xb.Db.Model.ColumnType.String, col.Type);
             Assert.IsTrue(col.IsPrimaryKey);
             Assert.IsFalse(col.IsNullable);
-            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), col.Encoding);
 
             col = this._test3Model.GetColumn("COL_INT");   //2147483647
             Assert.AreEqual("COL_INT", col.Name);
@@ -68,7 +66,6 @@ namespace TestsXb
             Assert.AreEqual(Xb.Db.Model.ColumnType.Number, col.Type);
             Assert.IsTrue(col.IsPrimaryKey);
             Assert.IsFalse(col.IsNullable);
-            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), col.Encoding);
 
             col = this._testModel.GetColumn("COL_DEC");
             Assert.AreEqual("COL_DEC", col.Name);
@@ -78,7 +75,6 @@ namespace TestsXb
             Assert.AreEqual(Xb.Db.Model.ColumnType.Number, col.Type);
             Assert.IsFalse(col.IsPrimaryKey);
             Assert.IsTrue(col.IsNullable);
-            Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), col.Encoding);
 
             this.Out("ColumnTest End.");
         }

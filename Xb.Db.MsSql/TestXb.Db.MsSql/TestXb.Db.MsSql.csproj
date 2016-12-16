@@ -73,7 +73,7 @@
     <Compile Include="Xb\Db\MsSqlBase.cs" />
     <Compile Include="Xb\Db\MsSqlColumnTests.cs" />
     <Compile Include="Xb\Db\MsSqlModelTests.cs" />
-    <Compile Include="Xb\Db\MsSqlTest.cs" />
+    <Compile Include="Xb\Db\MsSqlTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MsSqlTest.orderedtest">

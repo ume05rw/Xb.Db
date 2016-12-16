@@ -14,18 +14,18 @@ using Xb.Db;
 namespace TestXb
 {
     [TestClass]
-    public class MsSqlTest : MsSqlBase
+    public class MsSqlTests : MsSqlBase
     {
         private Xb.Db.MsSql GetDb()
         {
             try
             {
                 return new Xb.Db.MsSql(MsSqlBase.NameTarget
-                    , MsSqlBase.UserId
-                    , MsSqlBase.Password
-                    , MsSqlBase.Server
-                    , ""
-                    , false);
+                                     , MsSqlBase.UserId
+                                     , MsSqlBase.Password
+                                     , MsSqlBase.Server
+                                     , ""
+                                     , false);
             }
             catch (Exception ex)
             {

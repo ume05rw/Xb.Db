@@ -830,11 +830,23 @@ namespace Xb.Db
             {
                 if (disposing)
                 {
+                    if (this.Models != null)
+                        foreach (var model in this.Models.Values)
+                            model.Dispose();
+
+                    this.Encoding = null;
+                    this.TableNames = null;
+
+                    this.StructureTable?.Dispose();
+                    this.StructureTable = null;
+
                     try
                     {
                         this.Connection.Close();
                     }
                     catch (Exception) { }
+
+                    this.Connection = null;
                 }
                 disposedValue = true;
             }

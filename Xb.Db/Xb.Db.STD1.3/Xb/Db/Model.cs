@@ -178,6 +178,11 @@ namespace Xb.Db
         /// </summary>
         public Db.Model.Column[] PkeyColumns { get; private set; }
 
+        /// <summary>
+        /// String encoding
+        /// 文字列値のときのエンコード形式
+        /// </summary>
+        public System.Text.Encoding Encoding { get; set; }
 
         /// <summary>
         /// Constructor
@@ -264,7 +269,8 @@ namespace Xb.Db
                                                         , maxDecimal
                                                         , type
                                                         , isPkey
-                                                        , nullable);
+                                                        , nullable
+                                                        , this);
 
                 if (isPkey)
                 {
@@ -275,17 +281,6 @@ namespace Xb.Db
             this._templateTable = this._db.Query($"SELECT * FROM {this.TableName} WHERE 1 = 0 ");
 
             this.PkeyColumns = pkeyColumns.ToArray();
-        }
-
-
-        /// <summary>
-        /// Set string encoding (for string size validation)
-        /// </summary>
-        /// <param name="encoding"></param>
-        public void SetEncoding(System.Text.Encoding encoding)
-        {
-            foreach (var column in this.Columns)
-                column.Encoding = encoding;
         }
 
 
@@ -964,7 +959,7 @@ namespace Xb.Db
                     : value.ToString();
         }
 
-
+        #region "IDisposable Support"
         /// <summary>
         /// Dispose object
         /// </summary>
@@ -977,14 +972,28 @@ namespace Xb.Db
                 {
                     this._db = null;
                     this._templateTable = null;
+
+                    if (this.PkeyColumns != null)
+                        for (var i = 0; i < this.PkeyColumns.Length; i++)
+                            this.PkeyColumns[i] = null;
+
+                    if (this.Columns != null)
+                    {
+                        for (var i = 0; i < this.Columns.Length; i++)
+                        {
+                            this.Columns[i].Dispose();
+                            this.Columns[i] = null;
+                        }
+                    }
+
                     this.TableName = null;
                     this.Columns = null;
                     this.PkeyColumns = null;
+                    this.Encoding = null;
                 }
             }
         }
 
-        #region "IDisposable Support"
         public void Dispose()
         {
             this.Dispose(true);
