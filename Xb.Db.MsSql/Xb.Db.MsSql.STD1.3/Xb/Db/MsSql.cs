@@ -42,17 +42,39 @@ namespace Xb.Db
                  , isBuildModels
                  , encoding)
         {
+            this.Init(isBuildModels, encoding);
+        }
+
+
+        /// <summary>
+        /// Constructor
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="name"></param>
+        /// <param name="isBuildModels"></param>
+        /// <param name="encoding"></param>
+        public MsSql(SqlConnection connection
+                   , string name
+                   , bool isBuildModels = true
+                   , Encoding encoding = null)
+            : base (connection
+                  , name
+                  , isBuildModels
+                  , encoding)
+        {
+            this.Init(isBuildModels, encoding);
+        }
+
+
+        private void Init(bool isBuildModels
+                        , Encoding encoding)
+        {
             this.TranCmdBegin = "BEGIN TRANSACTION";
             this.TranCmdCommit = "COMMIT TRANSACTION";
             this.TranCmdRollback = "ROLLBACK TRANSACTION";
             this.SqlFind = "SELECT TOP(1) * FROM {0} WHERE {1} ";
             this.Encoding = encoding ?? Encoding.GetEncoding("Shift_JIS");
-
-            if (isBuildModels)
-            {
-                foreach (var model in this.Models.Values)
-                    model.Encoding = this.Encoding;
-            }
         }
 
 

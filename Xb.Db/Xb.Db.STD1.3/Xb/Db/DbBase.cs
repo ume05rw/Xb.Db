@@ -82,25 +82,25 @@ namespace Xb.Db
         /// Hostname(or IpAddress)
         /// 接続先アドレス(orサーバホスト名)
         /// </summary>
-        public string Address { get; }
+        public string Address { get; protected set; }
 
         /// <summary>
         /// Schema name
         /// 接続DBスキーマ名
         /// </summary>
-        public string Name { get; }
+        public string Name { get; protected set; }
 
         /// <summary>
         /// User name
         /// 接続ユーザー名
         /// </summary>
-        public string User { get; }
+        public string User { get; protected set; }
 
         /// <summary>
         /// Password
         /// 接続ユーザーパスワード
         /// </summary>
-        protected string Password { get; }
+        protected string Password { get; set; }
 
         /// <summary>
         /// Optional connection string
@@ -115,7 +115,19 @@ namespace Xb.Db
         /// <value></value>
         /// <returns></returns>
         /// <remarks></remarks>
-        public Encoding Encoding { get; protected set; }
+        public Encoding Encoding
+        {
+            get { return this._encoding; }
+            protected set
+            {
+                this._encoding = value;
+
+                if (this.Models != null)
+                    foreach (var model in this.Models.Values)
+                        model.Encoding = this.Encoding;
+            }
+        }
+        private Encoding _encoding;
 
         /// <summary>
         /// Transaction flag
@@ -187,6 +199,33 @@ namespace Xb.Db
             //Connect
             this.Open();
 
+
+            if (isBuildModels)
+            {
+                //Get Table-Structures
+                this.GetStructure();
+
+                //build Models of Tables
+                this.BuildModels();
+            }
+        }
+
+
+        /// <summary>
+        /// Constructor
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="name"></param>
+        /// <param name="isBuildModels"></param>
+        /// <param name="encoding"></param>
+        protected DbBase(DbConnection connection
+                       , string name
+                       , bool isBuildModels = true
+                       , Encoding encoding = null)
+        {
+            this.Name = name;
+            this.Encoding = encoding ?? System.Text.Encoding.UTF8;
 
             if (isBuildModels)
             {
