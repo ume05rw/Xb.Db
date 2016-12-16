@@ -66,12 +66,14 @@ namespace TestsXb
             Assert.AreEqual(4, this._test3Model.Columns.Length);
             Assert.AreEqual(Encoding.GetEncoding("Shift_JIS"), this._test3Model.Encoding);
 
-            this.Out("ConstructorTest Emd.");
+            this.Out("ConstructorTest End.");
         }
 
         [TestMethod()]
         public void GetColumnTest()
         {
+            this.Out("GetColumnTest Start.");
+
             var col = this._test2Model.GetColumn("COL_STR");
             Assert.AreEqual("COL_STR", col.Name);
             Assert.AreEqual(Xb.Db.Model.ColumnType.String, col.Type);
@@ -85,12 +87,8 @@ namespace TestsXb
             Assert.AreEqual(3, col.MaxDecimal);
             Assert.IsTrue(col.IsNullable);
             Assert.IsFalse(col.IsPrimaryKey);
-        }
 
-        [TestMethod()]
-        public void GetColumnTest2()
-        {
-            var col = this._test2Model.GetColumn(0);
+            col = this._test2Model.GetColumn(0);
             Assert.AreEqual("COL_STR", col.Name);
             Assert.AreEqual(Xb.Db.Model.ColumnType.String, col.Type);
             Assert.AreEqual(10, col.MaxLength);
@@ -103,204 +101,157 @@ namespace TestsXb
             Assert.AreEqual(3, col.MaxDecimal);
             Assert.IsTrue(col.IsNullable);
             Assert.IsFalse(col.IsPrimaryKey);
+
+            this.Out("GetColumnTest End.");
         }
 
         [TestMethod()]
-        public void FindTest1()
+        public void FindTest()
         {
-            var sql = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
-                        + ") VALUES ( "
-                        + " '{1}', {2}, {3}, '{4}') ";
+            this.Out("FindTest Start.");
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test2", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test2", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test2", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test2", "P004", 2, 2, "1902-01-01")));
-
-            var row = this._test2Model.Find("P002");
-
-            Assert.AreEqual("P002", row["COL_STR"]);
-            Assert.AreEqual((decimal)0, row["COL_DEC"]);
-            Assert.AreEqual(0, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(1900, 2, 3, 13, 45, 12), row["COL_DATETIME"]);
-
-            row = this._test2Model.Find("P001");
-            Assert.AreEqual("P001", row["COL_STR"]);
+            var row = this._test2Model.Find("BB");
+            Assert.AreEqual("BB", row["COL_STR"]);
             Assert.AreEqual((decimal)12.345, row["COL_DEC"]);
-            Assert.AreEqual(1234, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(2000, 1, 1), row["COL_DATETIME"]);
+            Assert.AreEqual(12345, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2016-12-13"), row["COL_DATETIME"]);
+
+            row = this._test2Model.Find("KEY");
+            Assert.AreEqual("KEY", row["COL_STR"]);
+            Assert.AreEqual((decimal)0, row["COL_DEC"]);
+            Assert.AreEqual(DBNull.Value, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2000-12-31"), row["COL_DATETIME"]);
+
+
+            row = this._test3Model.Find("ABC", 2);
+            Assert.AreEqual("ABC", row["COL_STR"]);
+            Assert.AreEqual((decimal)1, row["COL_DEC"]);
+            Assert.AreEqual(2, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), row["COL_DATETIME"]);
+
+            row = this._test3Model.Find("KEY", 0);
+            Assert.AreEqual("KEY", row["COL_STR"]);
+            Assert.AreEqual(DBNull.Value, row["COL_DEC"]);
+            Assert.AreEqual(0, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2000-12-31"), row["COL_DATETIME"]);
+
+            this.Out("FindTest End.");
         }
 
         [TestMethod()]
-        public async Task FindAsyncTest1()
+        public async Task FindAsyncTest()
         {
-            var sql = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
-                        + ") VALUES ( "
-                        + " '{1}', {2}, {3}, '{4}') ";
+            this.Out("FindAsyncTest Start.");
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test2", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test2", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test2", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test2", "P004", 2, 2, "1902-01-01")));
-
-            var row = await this._test2Model.FindAsync("P002");
-
-            Assert.AreEqual("P002", row["COL_STR"]);
-            Assert.AreEqual((decimal)0, row["COL_DEC"]);
-            Assert.AreEqual(0, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(1900, 2, 3, 13, 45, 12), row["COL_DATETIME"]);
-
-            row = await this._test2Model.FindAsync("P001");
-            Assert.AreEqual("P001", row["COL_STR"]);
+            var row = await this._test2Model.FindAsync("BB");
+            Assert.AreEqual("BB", row["COL_STR"]);
             Assert.AreEqual((decimal)12.345, row["COL_DEC"]);
-            Assert.AreEqual(1234, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(2000, 1, 1), row["COL_DATETIME"]);
-        }
+            Assert.AreEqual(12345, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2016-12-13"), row["COL_DATETIME"]);
 
-        [TestMethod()]
-        public void FindTest2()
-        {
-            var sql = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
-            + ") VALUES ( "
-            + " '{1}', {2}, {3}, '{4}') ";
-
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test3", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test3", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test3", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test3", "P004", 2, 2, "1902-01-01")));
-
-            var row = this._test3Model.Find("P002", 0);
-
-            Assert.AreEqual("P002", row["COL_STR"]);
+            row = await this._test2Model.FindAsync("KEY");
+            Assert.AreEqual("KEY", row["COL_STR"]);
             Assert.AreEqual((decimal)0, row["COL_DEC"]);
+            Assert.AreEqual(DBNull.Value, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2000-12-31"), row["COL_DATETIME"]);
+
+            row = await this._test3Model.FindAsync("ABC", 2);
+            Assert.AreEqual("ABC", row["COL_STR"]);
+            Assert.AreEqual((decimal)1, row["COL_DEC"]);
+            Assert.AreEqual(2, row["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), row["COL_DATETIME"]);
+
+            row = await this._test3Model.FindAsync("KEY", 0);
+            Assert.AreEqual("KEY", row["COL_STR"]);
+            Assert.AreEqual(DBNull.Value, row["COL_DEC"]);
             Assert.AreEqual(0, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(1900, 2, 3, 13, 45, 12), row["COL_DATETIME"]);
+            Assert.AreEqual(DateTime.Parse("2000-12-31"), row["COL_DATETIME"]);
 
-            row = this._test3Model.Find("P001", 1234);
-            Assert.AreEqual("P001", row["COL_STR"]);
-            Assert.AreEqual((decimal)12.345, row["COL_DEC"]);
-            Assert.AreEqual(1234, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(2000, 1, 1), row["COL_DATETIME"]);
-        }
-
-
-        [TestMethod()]
-        public async Task FindAsyncTest2()
-        {
-            var sql = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
-            + ") VALUES ( "
-            + " '{1}', {2}, {3}, '{4}') ";
-
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test3", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test3", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test3", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test3", "P004", 2, 2, "1902-01-01")));
-
-            var row = await this._test3Model.FindAsync("P002", 0);
-
-            Assert.AreEqual("P002", row["COL_STR"]);
-            Assert.AreEqual((decimal)0, row["COL_DEC"]);
-            Assert.AreEqual(0, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(1900, 2, 3, 13, 45, 12), row["COL_DATETIME"]);
-
-            row = await this._test3Model.FindAsync("P001", 1234);
-            Assert.AreEqual("P001", row["COL_STR"]);
-            Assert.AreEqual((decimal)12.345, row["COL_DEC"]);
-            Assert.AreEqual(1234, row["COL_INT"]);
-            Assert.AreEqual(new DateTime(2000, 1, 1), row["COL_DATETIME"]);
+            this.Out("FindAsyncTest End.");
         }
 
 
         [TestMethod()]
         public void FindAllTest()
         {
-            //一旦、テストデータを消す
-            var sql = "DELETE FROM {0}";
-            this._db.Execute(String.Format(sql, "Test"));
+            this.Out("FindAllTest Start.");
 
-            sql = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
-                        + ") VALUES ( "
-                        + " '{1}', {2}, {3}, '{4}') ";
+            var table = this._test3Model.FindAll();
+            Assert.AreEqual(6, table.Rows.Count);
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(sql, "Test", "P004", 2, 2, "1902-01-01")));
-
-            var table = this._testModel.FindAll();
-
+            table = this._test3Model.FindAll("COL_STR LIKE '%B%' ", "COL_INT DESC");
             Assert.AreEqual(4, table.Rows.Count);
 
-            table = this._testModel.FindAll("COL_DEC >= 1", "COL_DATETIME DESC");
-
-            Assert.AreEqual(3, table.Rows.Count);
-
-            Assert.AreEqual("P001", table.Rows[0]["COL_STR"]);
+            Assert.AreEqual("BB", table.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal)12.345, table.Rows[0]["COL_DEC"]);
-            Assert.AreEqual(1234, table.Rows[0]["COL_INT"]);
-            Assert.AreEqual(new DateTime(2000, 1, 1), table.Rows[0]["COL_DATETIME"]);
+            Assert.AreEqual(12345, table.Rows[0]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2016-12-13"), table.Rows[0]["COL_DATETIME"]);
 
-            Assert.AreEqual("P004", table.Rows[1]["COL_STR"]);
-            Assert.AreEqual((decimal)2, table.Rows[1]["COL_DEC"]);
-            Assert.AreEqual(2, table.Rows[1]["COL_INT"]);
-            Assert.AreEqual(new DateTime(1902, 1, 1), table.Rows[1]["COL_DATETIME"]);
+            Assert.AreEqual("ABC", table.Rows[1]["COL_STR"]);
+            Assert.AreEqual((decimal)1, table.Rows[1]["COL_DEC"]);
+            Assert.AreEqual(3, table.Rows[1]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), table.Rows[1]["COL_DATETIME"]);
 
-            Assert.AreEqual("P003", table.Rows[2]["COL_STR"]);
+            Assert.AreEqual("ABC", table.Rows[2]["COL_STR"]);
             Assert.AreEqual((decimal)1, table.Rows[2]["COL_DEC"]);
-            Assert.AreEqual(1, table.Rows[2]["COL_INT"]);
-            Assert.AreEqual(new DateTime(1901, 1, 1), table.Rows[2]["COL_DATETIME"]);
+            Assert.AreEqual(2, table.Rows[2]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), table.Rows[2]["COL_DATETIME"]);
+
+            Assert.AreEqual("ABC", table.Rows[3]["COL_STR"]);
+            Assert.AreEqual((decimal)1, table.Rows[3]["COL_DEC"]);
+            Assert.AreEqual(1, table.Rows[3]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), table.Rows[3]["COL_DATETIME"]);
+
+            this.Out("FindAllTest End.");
         }
 
         [TestMethod()]
         public async Task FindAllAsyncTest()
         {
-            //一旦、テストデータを消す
-            var sql = "DELETE FROM {0}";
-            await this._db.ExecuteAsync(String.Format(sql, "Test"));
+            this.Out("FindAllAsyncTest Start.");
 
-            sql = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
-                        + ") VALUES ( "
-                        + " '{1}', {2}, {3}, '{4}') ";
+            var table = await this._test3Model.FindAllAsync();
+            Assert.AreEqual(6, table.Rows.Count);
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(sql, "Test", "P004", 2, 2, "1902-01-01")));
-
-            var table = await this._testModel.FindAllAsync();
-
+            table = await this._test3Model.FindAllAsync("COL_STR LIKE '%B%' ", "COL_INT DESC");
             Assert.AreEqual(4, table.Rows.Count);
 
-            table = await this._testModel.FindAllAsync("COL_DEC >= 1", "COL_DATETIME DESC");
-
-            Assert.AreEqual(3, table.Rows.Count);
-
-            Assert.AreEqual("P001", table.Rows[0]["COL_STR"]);
+            Assert.AreEqual("BB", table.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal)12.345, table.Rows[0]["COL_DEC"]);
-            Assert.AreEqual(1234, table.Rows[0]["COL_INT"]);
-            Assert.AreEqual(new DateTime(2000, 1, 1), table.Rows[0]["COL_DATETIME"]);
+            Assert.AreEqual(12345, table.Rows[0]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2016-12-13"), table.Rows[0]["COL_DATETIME"]);
 
-            Assert.AreEqual("P004", table.Rows[1]["COL_STR"]);
-            Assert.AreEqual((decimal)2, table.Rows[1]["COL_DEC"]);
-            Assert.AreEqual(2, table.Rows[1]["COL_INT"]);
-            Assert.AreEqual(new DateTime(1902, 1, 1), table.Rows[1]["COL_DATETIME"]);
+            Assert.AreEqual("ABC", table.Rows[1]["COL_STR"]);
+            Assert.AreEqual((decimal)1, table.Rows[1]["COL_DEC"]);
+            Assert.AreEqual(3, table.Rows[1]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), table.Rows[1]["COL_DATETIME"]);
 
-            Assert.AreEqual("P003", table.Rows[2]["COL_STR"]);
+            Assert.AreEqual("ABC", table.Rows[2]["COL_STR"]);
             Assert.AreEqual((decimal)1, table.Rows[2]["COL_DEC"]);
-            Assert.AreEqual(1, table.Rows[2]["COL_INT"]);
-            Assert.AreEqual(new DateTime(1901, 1, 1), table.Rows[2]["COL_DATETIME"]);
+            Assert.AreEqual(2, table.Rows[2]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), table.Rows[2]["COL_DATETIME"]);
+
+            Assert.AreEqual("ABC", table.Rows[3]["COL_STR"]);
+            Assert.AreEqual((decimal)1, table.Rows[3]["COL_DEC"]);
+            Assert.AreEqual(1, table.Rows[3]["COL_INT"]);
+            Assert.AreEqual(DateTime.Parse("2001-01-01"), table.Rows[3]["COL_DATETIME"]);
+
+            this.Out("FindAllAsyncTest End.");
         }
 
         [TestMethod()]
         public void NewRowTest()
         {
-            var row = this._test3Model.NewRow();
+            this.Out("NewRowTest Start.");
 
+            var row = this._test3Model.NewRow();
             Assert.AreEqual(4, row.Table.Columns.Count);
             Assert.AreEqual("COL_STR", row.Table.Columns[0].ColumnName);
             Assert.AreEqual("COL_DEC", row.Table.Columns[1].ColumnName);
             Assert.AreEqual("COL_INT", row.Table.Columns[2].ColumnName);
             Assert.AreEqual("COL_DATETIME", row.Table.Columns[3].ColumnName);
+
+            this.Out("NewRowTest End.");
         }
 
         [TestMethod()]
@@ -395,6 +346,8 @@ namespace TestsXb
         [TestMethod()]
         public void WriteTest()
         {
+            this.Out("WriteTest Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             this._db.Execute(String.Format(sql, "Test2"));
@@ -519,11 +472,14 @@ namespace TestsXb
             Assert.AreEqual(0, table.Rows[1]["COL_INT"]);
             Assert.AreEqual(new DateTime(2000, 1, 3), table.Rows[1]["COL_DATETIME"]);
 
+            this.Out("WriteTest End.");
         }
 
         [TestMethod()]
         public async Task WriteAsyncTest()
         {
+            this.Out("WriteAsyncTest Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             await this._db.ExecuteAsync(String.Format(sql, "Test2"));
@@ -648,11 +604,14 @@ namespace TestsXb
             Assert.AreEqual(0, table.Rows[1]["COL_INT"]);
             Assert.AreEqual(new DateTime(2000, 1, 3), table.Rows[1]["COL_DATETIME"]);
 
+            this.Out("WriteAsyncTest End.");
         }
 
         [TestMethod()]
         public void InsertTest()
         {
+            this.Out("InsertTest Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             this._db.Execute(String.Format(sql, "Test"));
@@ -725,12 +684,16 @@ namespace TestsXb
             Assert.AreEqual((decimal)0, table.Rows[1]["COL_DEC"]);
             Assert.AreEqual(0, table.Rows[1]["COL_INT"]);
             Assert.AreEqual(new DateTime(2000, 1, 1), table.Rows[1]["COL_DATETIME"]);
+
+            this.Out("InsertTest End.");
         }
 
 
         [TestMethod()]
         public async Task InsertAsyncTest()
         {
+            this.Out("InsertAsyncTest Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             await this._db.ExecuteAsync(String.Format(sql, "Test"));
@@ -803,11 +766,15 @@ namespace TestsXb
             Assert.AreEqual((decimal)0, table.Rows[1]["COL_DEC"]);
             Assert.AreEqual(0, table.Rows[1]["COL_INT"]);
             Assert.AreEqual(new DateTime(2000, 1, 1), table.Rows[1]["COL_DATETIME"]);
+
+            this.Out("InsertAsyncTest End.");
         }
 
         [TestMethod()]
         public void UpdateTest()
         {
+            this.Out("UpdateTest Start.");
+
             var insert = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
                         + ") VALUES ( "
                         + " '{1}', {2}, {3}, '{4}') ";
@@ -914,12 +881,16 @@ namespace TestsXb
             Assert.AreEqual((decimal)0, table.Rows[0]["COL_DEC"]);
             Assert.AreEqual(0, table.Rows[0]["COL_INT"]);
             Assert.AreEqual(new DateTime(2010, 3, 4), table.Rows[0]["COL_DATETIME"]);
+
+            this.Out("UpdateTest End.");
         }
 
 
         [TestMethod()]
         public async Task UpdateAsyncTest()
         {
+            this.Out("UpdateAsyncTest Start.");
+
             var insert = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
                         + ") VALUES ( "
                         + " '{1}', {2}, {3}, '{4}') ";
@@ -1026,12 +997,16 @@ namespace TestsXb
             Assert.AreEqual((decimal)0, table.Rows[0]["COL_DEC"]);
             Assert.AreEqual(0, table.Rows[0]["COL_INT"]);
             Assert.AreEqual(new DateTime(2010, 3, 4), table.Rows[0]["COL_DATETIME"]);
+
+            this.Out("UpdateAsyncTest End.");
         }
 
 
         [TestMethod()]
         public void DeleteTest()
         {
+            this.Out("DeleteTest Start.");
+
             var insert = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
             + ") VALUES ( "
             + " '{1}', {2}, {3}, '{4}') ";
@@ -1112,12 +1087,16 @@ namespace TestsXb
             select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
             table = this._db.Query(select);
             Assert.AreEqual(0, table.Rows.Count);
+
+            this.Out("DeleteTest End.");
         }
 
 
         [TestMethod()]
         public async Task DeleteAsyncTest()
         {
+            this.Out("DeleteAsyncTest Start.");
+
             var insert = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
             + ") VALUES ( "
             + " '{1}', {2}, {3}, '{4}') ";
@@ -1198,11 +1177,15 @@ namespace TestsXb
             select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
             Assert.AreEqual(0, table.Rows.Count);
+
+            this.Out("DeleteAsyncTest End.");
         }
 
         [TestMethod()]
         public void ReplaceUpdateTest1()
         {
+            this.Out("ReplaceUpdateTest1 Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             this._db.Execute(String.Format(sql, "Test2"));
@@ -1367,12 +1350,15 @@ namespace TestsXb
             Assert.AreEqual(6, table.Rows[4]["COL_INT"]);
             Assert.AreEqual(new DateTime(1906, 6, 6), table.Rows[4]["COL_DATETIME"]);
 
+            this.Out("ReplaceUpdateTest1 End.");
         }
 
 
         [TestMethod()]
         public async Task ReplaceUpdateAsyncTest1()
         {
+            this.Out("ReplaceUpdateAsyncTest1 Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             await this._db.ExecuteAsync(String.Format(sql, "Test2"));
@@ -1537,11 +1523,14 @@ namespace TestsXb
             Assert.AreEqual(6, table.Rows[4]["COL_INT"]);
             Assert.AreEqual(new DateTime(1906, 6, 6), table.Rows[4]["COL_DATETIME"]);
 
+            this.Out("ReplaceUpdateAsyncTest1 End.");
         }
 
         [TestMethod()]
         public void ReplaceUpdateTest2()
         {
+            this.Out("ReplaceUpdateTest2 Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             this._db.Execute(String.Format(sql, "Test3"));
@@ -1646,11 +1635,15 @@ namespace TestsXb
             Assert.AreEqual((decimal)60, table.Rows[4]["COL_DEC"]);
             Assert.AreEqual(6, table.Rows[4]["COL_INT"]);
             Assert.AreEqual(new DateTime(1906, 7, 8), table.Rows[4]["COL_DATETIME"]);
+
+            this.Out("ReplaceUpdateTest2 End.");
         }
 
         [TestMethod()]
         public async Task ReplaceUpdateAsyncTest2()
         {
+            this.Out("ReplaceUpdateAsyncTest2 Start.");
+
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
             await this._db.ExecuteAsync(String.Format(sql, "Test3"));
@@ -1755,6 +1748,8 @@ namespace TestsXb
             Assert.AreEqual((decimal)60, table.Rows[4]["COL_DEC"]);
             Assert.AreEqual(6, table.Rows[4]["COL_INT"]);
             Assert.AreEqual(new DateTime(1906, 7, 8), table.Rows[4]["COL_DATETIME"]);
+
+            this.Out("ReplaceUpdateAsyncTest2 End.");
         }
 
         public override void Dispose()
