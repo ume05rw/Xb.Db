@@ -290,29 +290,8 @@ namespace Xb.Db
                                       .Rows
                                       .Where(row => row["TABLE_NAME"].ToString() == name)
                                       .ToArray();
-                this.Models.Add(name.ToUpper(), new Xb.Db.Model(this, columns));
+                this.Models.Add(name, new Xb.Db.Model(this, columns));
             }
-        }
-
-
-        /// <summary>
-        /// Get Model of Table
-        /// 渡し値テーブル名のモデルインスタンスを取得する。
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public Xb.Db.Model GetModel(string tableName)
-        {
-            tableName = tableName.ToUpper();
-
-            if (!this.Models.ContainsKey(tableName))
-            {
-                Xb.Util.Out("Xb.Db.GetModel: Table not found");
-                throw new ArgumentException("Xb.Db.GetModel: Table not found");
-            }
-
-            return this.Models[tableName];
         }
 
 
@@ -367,10 +346,9 @@ namespace Xb.Db
         /// <returns></returns>
         public int Execute(string sql, DbParameter[] parameters = null)
         {
-            var command = this.GetCommand(parameters);
-
             try
             {
+                var command = this.GetCommand(parameters);
                 command.CommandText = sql;
                 var result = command.ExecuteNonQuery();
                 command.Dispose();
@@ -414,13 +392,15 @@ namespace Xb.Db
         /// <returns></returns>
         public DbDataReader GetReader(string sql, DbParameter[] parameters = null)
         {
-            var command = this.GetCommand(parameters);
-
             try
             {
+                var command = this.GetCommand(parameters);
                 command.CommandText = sql;
                 var result = command.ExecuteReader(CommandBehavior.SingleResult);
-                command.Dispose();
+
+                //DO-NOT Dispose. dispose command, reader will be closed.
+                //command.Dispose();
+                command = null;
 
                 return result;
             }
@@ -463,9 +443,12 @@ namespace Xb.Db
         {
             try
             {
-                var reader = this.GetReader(sql, parameters);
+                var command = this.GetCommand(parameters);
+                command.CommandText = sql;
+                var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
                 var result = new ResultTable(reader);
                 reader.Dispose();
+                command.Dispose();
                 return result;
             }
             catch (Exception ex)

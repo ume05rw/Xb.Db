@@ -99,15 +99,15 @@ namespace TestXb.Db
             return result;
         }
 
-        protected DataTable Query(string sql)
-        {
-            var adapter = new MySqlDataAdapter(sql, this.Connection);
-            var result = new DataTable();
-            adapter.Fill(result);
-            adapter.Dispose();
+        //protected DataTable Query(string sql)
+        //{
+        //    var adapter = new MySqlDataAdapter(sql, this.Connection);
+        //    var result = new DataTable();
+        //    adapter.Fill(result);
+        //    adapter.Dispose();
 
-            return result;
-        }
+        //    return result;
+        //}
 
         public override void Dispose()
         {

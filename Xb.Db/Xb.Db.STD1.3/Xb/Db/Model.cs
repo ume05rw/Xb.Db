@@ -376,7 +376,7 @@ namespace Xb.Db
 
             foreach (Xb.Db.Model.Column col in this.Columns)
             {
-                if(!row.Table.Columns.Any(rc => rc.ColumnName == col.Name))
+                if(!row.Table.ColumnNames.Contains(col.Name))
                     continue;
 
                 var errorType = col.Validate(row[col.Name]);
@@ -408,10 +408,6 @@ namespace Xb.Db
                 || excludeColumnsOnUpdate.Length == 0)
                 excludeColumnsOnUpdate = new string[] { };
 
-            var colNames = new List<string>();
-            foreach (var col in row.Table.Columns)
-                colNames.Add(col.ColumnName);
-
             if (this.PkeyColumns.Length <= 0)
             {
                 return new Xb.Db.Model.Error[]
@@ -424,7 +420,7 @@ namespace Xb.Db
             var wheres = new List<string>();
             foreach (Xb.Db.Model.Column col in this.PkeyColumns)
             {
-                var value = row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
+                var value = row.Table.ColumnNames.Contains(col.Name)
                                 ? this.NullFormat(row[col.Name])
                                 : null;
                 wheres.Add(col.GetSqlFormula(value));
@@ -480,18 +476,16 @@ namespace Xb.Db
         /// <returns></returns>
         public Xb.Db.Model.Error[] Insert(ResultRow row)
         {
-            var colNames = new List<string>();
-            foreach (var col in row.Table.Columns)
-                colNames.Add(col.ColumnName);
-
             var colValues = new Dictionary<string, string>();
             foreach (Xb.Db.Model.Column col in this.Columns)
                 colValues.Add(col.Name,
-                              row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
+                              row.Table.ColumnNames.Contains(col.Name)  //Any(rc => rc.ColumnName == col.Name)
                                   ? this.NullFormat(row[col.Name])
                                   : null);
 
-            var targetColumns = this.Columns.Where(col => colNames.Contains(col.Name)).ToList();
+            var targetColumns = this.Columns
+                                    .Where(col => row.Table.ColumnNames.Contains(col.Name))
+                                    .ToList();
 
             var sql = $"INSERT INTO {this.TableName} ( {string.Join(", ", targetColumns.Select(col => col.Name))} ) " 
                 + $"  VALUES ( {string.Join(", ", targetColumns.Select(col => col.GetSqlValue(colValues[col.Name])))} )";
@@ -541,10 +535,6 @@ namespace Xb.Db
                                      , string[] keyColumns = null
                                      , string[] excludeColumns = null)
         {
-            var colNames = new List<string>();
-            foreach (var col in row.Table.Columns)
-                colNames.Add(col.ColumnName);
-
             if (keyColumns == null)
                 keyColumns = this.PkeyColumns.Select(col => col.Name).ToArray();
 
@@ -557,7 +547,7 @@ namespace Xb.Db
             foreach (Xb.Db.Model.Column col in this.Columns)
             {
                 colValues.Add(col.Name,
-                    row.Table.Columns.Any(rc => rc.ColumnName == col.Name)
+                    row.Table.ColumnNames.Contains(col.Name)
                         ? this.NullFormat(row[col.Name])
                         : null);
 
@@ -582,7 +572,7 @@ namespace Xb.Db
             }
 
             var targetColumns
-                = this.Columns.Where(col => colNames.Contains(col.Name)
+                = this.Columns.Where(col => row.Table.ColumnNames.Contains(col.Name)
                                              && !excludeColumns.Contains(col.Name)).ToList();
 
             var updates = new List<string>();
@@ -657,13 +647,11 @@ namespace Xb.Db
                 || keyColumns.Length == 0)
                 keyColumns = this.PkeyColumns.Select(col => col.Name).ToArray();
 
-
             var tmpKeys = new List<string>();
             foreach (Xb.Db.Model.Column col in this.Columns)
-            {
                 if (keyColumns.Contains(col.Name))
                     tmpKeys.Add(col.Name);
-            }
+            
             keyColumns = tmpKeys.ToArray();
 
             if (keyColumns.Length == 0)
@@ -681,7 +669,7 @@ namespace Xb.Db
             foreach (string col in keyColumns)
             {
                 colValues.Add(col,
-                              row.Table.Columns.Any(rc => rc.ColumnName == col)
+                              row.Table.ColumnNames.Contains(col)
                                   ? this.NullFormat(row[col])
                                   : null);
             }

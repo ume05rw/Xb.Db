@@ -38,9 +38,9 @@ namespace TestsXb
                 throw ex;
             }
 
-            this._testModel = this._db.GetModel("test");
-            this._test2Model = this._db.GetModel("test2");
-            this._test3Model = this._db.GetModel("test3");
+            this._testModel = this._db.Models["test"];
+            this._test2Model = this._db.Models["test2"];
+            this._test3Model = this._db.Models["test3"];
 
             this.Out("MsSqlModelTests.Constructor End.");
         }
@@ -244,11 +244,11 @@ namespace TestsXb
             this.Out("NewRowTest Start.");
 
             var row = this._test3Model.NewRow();
-            Assert.AreEqual(4, row.Table.Columns.Count);
-            Assert.AreEqual("COL_STR", row.Table.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", row.Table.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", row.Table.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", row.Table.Columns[3].ColumnName);
+            Assert.AreEqual(4, row.Table.ColumnNames.Length);
+            Assert.AreEqual("COL_STR", row.Table.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", row.Table.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", row.Table.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", row.Table.ColumnNames[3]);
 
             this.Out("NewRowTest End.");
         }
@@ -1543,8 +1543,8 @@ namespace TestsXb
             Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P004", 4, 4, "2004-04-04")));
 
             var select = "SELECT * FROM test3 WHERE 1 = @num ORDER BY COL_STR";
-            var oldTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 1, MySqlDbType.Int32)});
-            var newTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 0, MySqlDbType.Int32) });
+            var oldTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 1, DbType.Int32)});
+            var newTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 0, DbType.Int32) });
             Assert.AreEqual(4, oldTable.Rows.Count);
 
             Assert.AreEqual("P001", oldTable.Rows[0]["COL_STR"]);
@@ -1656,8 +1656,8 @@ namespace TestsXb
             Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P004", 4, 4, "2004-04-04")));
 
             var select = "SELECT * FROM test3 WHERE 1 = @num ORDER BY COL_STR";
-            var oldTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 1, MySqlDbType.Int32) });
-            var newTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 0, MySqlDbType.Int32) });
+            var oldTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 1, DbType.Int32) });
+            var newTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 0, DbType.Int32) });
             Assert.AreEqual(4, oldTable.Rows.Count);
 
             Assert.AreEqual("P001", oldTable.Rows[0]["COL_STR"]);

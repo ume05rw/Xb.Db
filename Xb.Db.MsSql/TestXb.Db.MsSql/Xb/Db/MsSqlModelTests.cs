@@ -36,9 +36,9 @@ namespace TestsXb
                 throw ex;
             }
 
-            this._testModel = this._db.GetModel("Test");
-            this._test2Model = this._db.GetModel("Test2");
-            this._test3Model = this._db.GetModel("Test3");
+            this._testModel = this._db.Models["Test"];
+            this._test2Model = this._db.Models["Test2"];
+            this._test3Model = this._db.Models["Test3"];
 
             this.Out("MsSqlModelTests.Constructor End.");
         }
@@ -242,11 +242,11 @@ namespace TestsXb
             this.Out("NewRowTest Start.");
 
             var row = this._test3Model.NewRow();
-            Assert.AreEqual(4, row.Table.Columns.Count);
-            Assert.AreEqual("COL_STR", row.Table.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", row.Table.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", row.Table.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", row.Table.Columns[3].ColumnName);
+            Assert.AreEqual(4, row.Table.ColumnNames.Length);
+            Assert.AreEqual("COL_STR", row.Table.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", row.Table.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", row.Table.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", row.Table.ColumnNames[3]);
 
             this.Out("NewRowTest End.");
         }

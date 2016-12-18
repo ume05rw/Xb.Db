@@ -87,22 +87,22 @@ namespace TestXb
             this.Out("GetParameterTest Start.");
             var db = this.GetDb();
 
-            var param = db.GetParameter("@name", "value", MySqlDbType.VarChar);
+            var param = db.GetParameter("@name", "value", DbType.String);
             Assert.AreEqual("@name", param.ParameterName);
             Assert.AreEqual("value", param.Value);
-            Assert.AreEqual(MySqlDbType.VarChar, ((MySqlParameter)param).MySqlDbType);
+            Assert.AreEqual(DbType.String, ((MySqlParameter)param).DbType);
             Assert.AreEqual(ParameterDirection.Input, param.Direction);
 
-            param = db.GetParameter("name", "value", MySqlDbType.VarChar);
+            param = db.GetParameter("name", "value", DbType.String);
             Assert.AreEqual("@name", param.ParameterName);
             Assert.AreEqual("value", param.Value);
-            Assert.AreEqual(MySqlDbType.VarChar, ((MySqlParameter)param).MySqlDbType);
+            Assert.AreEqual(DbType.String, ((MySqlParameter)param).DbType);
             Assert.AreEqual(ParameterDirection.Input, param.Direction);
 
             param = db.GetParameter();
             Assert.AreEqual("", param.ParameterName);
             Assert.AreEqual(null, param.Value);
-            Assert.AreEqual(MySqlDbType.VarChar, ((MySqlParameter)param).MySqlDbType);
+            Assert.AreEqual(DbType.String, ((MySqlParameter)param).DbType);
             Assert.AreEqual(ParameterDirection.Input, param.Direction);
 
             db.Dispose();
@@ -117,7 +117,7 @@ namespace TestXb
             var db = this.GetDb();
 
             //初期状態
-            var dt = this.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
+            var dt = db.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("KEY", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal) 0, dt.Rows[0]["COL_DEC"]);
@@ -131,7 +131,7 @@ namespace TestXb
                         "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME) VALUES ({1}, {2}, {3}, {4});"
                         , "test2", "'123'", 0.123, 1234567, "'2020-01-01'"));
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = '123' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = '123' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("123", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal) 0.123, dt.Rows[0]["COL_DEC"]);
@@ -145,12 +145,12 @@ namespace TestXb
                     , new DbParameter[]
                     {
                         db.GetParameter("str", "KEY2")
-                        , db.GetParameter("dec", 98.76, MySqlDbType.Decimal)
-                        , db.GetParameter("int", 999, MySqlDbType.Int32)
-                        , db.GetParameter("datetime", "1999-12-31", MySqlDbType.DateTime)
+                        , db.GetParameter("dec", 98.76, DbType.Decimal)
+                        , db.GetParameter("int", 999, DbType.Int32)
+                        , db.GetParameter("datetime", "1999-12-31", DbType.DateTime)
                     }); 
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("KEY2", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal) 98.76, dt.Rows[0]["COL_DEC"]);
@@ -160,9 +160,9 @@ namespace TestXb
             //UPDATE SQL文字列のみ
             cnt = db.Execute("UPDATE test SET COL_DEC=10, COL_INT=20, COL_DATETIME=NULL WHERE COL_STR LIKE '%B%' ");
             Assert.AreEqual(4, cnt);
-            dt = this.Query("SELECT * FROM test WHERE COL_STR LIKE '%B%' ");
+            dt = db.Query("SELECT * FROM test WHERE COL_STR LIKE '%B%' ");
             Assert.AreEqual(4, dt.Rows.Count);
-            foreach (DataRow row in dt.Rows)
+            foreach (ResultRow row in dt.Rows)
             {
                 Assert.IsTrue(row["COL_STR"].ToString().IndexOf("B") != -1);
                 Assert.AreEqual((decimal) 10, row["COL_DEC"]);
@@ -175,11 +175,11 @@ namespace TestXb
                 , new DbParameter[]
                 {
                     db.GetParameter("@str", "KEY")
-                    , db.GetParameter("@dec", DBNull.Value, MySqlDbType.Decimal)
-                    , db.GetParameter("@int", 9876, MySqlDbType.Int32)
-                    , db.GetParameter("@datetime", DateTime.Parse("2200/03/04"), MySqlDbType.DateTime)
+                    , db.GetParameter("@dec", DBNull.Value, DbType.Decimal)
+                    , db.GetParameter("@int", 9876, DbType.Int32)
+                    , db.GetParameter("@datetime", DateTime.Parse("2200/03/04"), DbType.DateTime)
                 });
-            dt = this.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
+            dt = db.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("KEY", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual(DBNull.Value, dt.Rows[0]["COL_DEC"]);
@@ -189,14 +189,14 @@ namespace TestXb
             //DELETE SQL文字列のみ
             cnt = db.Execute("DELETE FROM test2 WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(0, dt.Rows.Count);
 
             //UPDATE DbParameter使用
             cnt = db.Execute("DELETE FROM test2 WHERE COL_STR = @str ",
                 new DbParameter[] {db.GetParameter("str", "KEY2")});
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
             Assert.AreEqual(0, dt.Rows.Count);
 
             db.Dispose();
@@ -211,7 +211,7 @@ namespace TestXb
             var db = this.GetDb();
 
             //初期状態
-            var dt = this.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
+            var dt = db.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("KEY", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal) 0, dt.Rows[0]["COL_DEC"]);
@@ -226,7 +226,7 @@ namespace TestXb
                             "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME) VALUES ({1}, {2}, {3}, {4});"
                             , "test2", "'123'", 0.123, 1234567, "'2020-01-01'"));
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = '123' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = '123' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("123", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal) 0.123, dt.Rows[0]["COL_DEC"]);
@@ -241,12 +241,12 @@ namespace TestXb
                         , new DbParameter[]
                         {
                             db.GetParameter("str", "KEY2")
-                            , db.GetParameter("dec", 98.76, MySqlDbType.Decimal)
-                            , db.GetParameter("int", 999, MySqlDbType.Int32)
-                            , db.GetParameter("datetime", "1999-12-31", MySqlDbType.DateTime)
+                            , db.GetParameter("dec", 98.76, DbType.Decimal)
+                            , db.GetParameter("int", 999, DbType.Int32)
+                            , db.GetParameter("datetime", "1999-12-31", DbType.DateTime)
                         });
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("KEY2", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual((decimal) 98.76, dt.Rows[0]["COL_DEC"]);
@@ -259,9 +259,9 @@ namespace TestXb
                     db.ExecuteAsync(
                         "UPDATE test SET COL_DEC=10, COL_INT=20, COL_DATETIME=NULL WHERE COL_STR LIKE '%B%' ");
             Assert.AreEqual(4, cnt);
-            dt = this.Query("SELECT * FROM test WHERE COL_STR LIKE '%B%' ");
+            dt = db.Query("SELECT * FROM test WHERE COL_STR LIKE '%B%' ");
             Assert.AreEqual(4, dt.Rows.Count);
-            foreach (DataRow row in dt.Rows)
+            foreach (ResultRow row in dt.Rows)
             {
                 Assert.IsTrue(row["COL_STR"].ToString().IndexOf("B") != -1);
                 Assert.AreEqual((decimal) 10, row["COL_DEC"]);
@@ -277,11 +277,11 @@ namespace TestXb
                         , new DbParameter[]
                         {
                             db.GetParameter("@str", "KEY")
-                            , db.GetParameter("@dec", DBNull.Value, MySqlDbType.Decimal)
-                            , db.GetParameter("@int", 9876, MySqlDbType.Int32)
-                            , db.GetParameter("@datetime", DateTime.Parse("2200/03/04"), MySqlDbType.DateTime)
+                            , db.GetParameter("@dec", DBNull.Value, DbType.Decimal)
+                            , db.GetParameter("@int", 9876, DbType.Int32)
+                            , db.GetParameter("@datetime", DateTime.Parse("2200/03/04"), DbType.DateTime)
                         });
-            dt = this.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
+            dt = db.Query("SELECT * FROM test WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("KEY", dt.Rows[0]["COL_STR"]);
             Assert.AreEqual(DBNull.Value, dt.Rows[0]["COL_DEC"]);
@@ -291,7 +291,7 @@ namespace TestXb
             //DELETE SQL文字列のみ
             cnt = await db.ExecuteAsync("DELETE FROM test2 WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY' ");
             Assert.AreEqual(0, dt.Rows.Count);
 
             //UPDATE DbParameter使用
@@ -300,7 +300,7 @@ namespace TestXb
                     db.ExecuteAsync("DELETE FROM test2 WHERE COL_STR = @str ",
                         new DbParameter[] {db.GetParameter("str", "KEY2")});
             Assert.AreEqual(1, cnt);
-            dt = this.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
+            dt = db.Query("SELECT * FROM test2 WHERE COL_STR = 'KEY2' ");
             Assert.AreEqual(0, dt.Rows.Count);
 
             db.Dispose();
@@ -321,12 +321,13 @@ namespace TestXb
             Assert.AreEqual("COL_DEC", reader.GetName(1));
             Assert.AreEqual("COL_INT", reader.GetName(2));
             Assert.AreEqual("COL_DATETIME", reader.GetName(3));
+
+            Assert.IsTrue(reader.Read());
             Assert.AreEqual(0, reader.GetOrdinal("COL_STR"));
             Assert.AreEqual(1, reader.GetOrdinal("COL_DEC"));
             Assert.AreEqual(2, reader.GetOrdinal("COL_INT"));
             Assert.AreEqual(3, reader.GetOrdinal("COL_DATETIME"));
 
-            Assert.IsTrue(reader.Read());
             Assert.AreEqual("ABC", reader.GetString(0));
             Assert.AreEqual((decimal) 1, reader.GetDecimal(1));
             Assert.AreEqual(1, reader.GetInt32(2));
@@ -366,12 +367,13 @@ namespace TestXb
             Assert.AreEqual("COL_DEC", reader.GetName(1));
             Assert.AreEqual("COL_INT", reader.GetName(2));
             Assert.AreEqual("COL_DATETIME", reader.GetName(3));
+            
+            Assert.IsTrue(reader.Read());
             Assert.AreEqual(0, reader.GetOrdinal("COL_STR"));
             Assert.AreEqual(1, reader.GetOrdinal("COL_DEC"));
             Assert.AreEqual(2, reader.GetOrdinal("COL_INT"));
             Assert.AreEqual(3, reader.GetOrdinal("COL_DATETIME"));
 
-            Assert.IsTrue(reader.Read());
             Assert.AreEqual("ABC", reader.GetString(0));
             Assert.AreEqual((decimal) 1, reader.GetDecimal(1));
             Assert.AreEqual(1, reader.GetInt32(2));
@@ -407,10 +409,10 @@ namespace TestXb
             var rt = db.Query("SELECT * FROM test WHERE COL_STR LIKE '%B%' ORDER BY COL_STR ");
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(4, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -456,10 +458,10 @@ namespace TestXb
             Assert.IsFalse(rt == null);
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(0, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -492,10 +494,10 @@ namespace TestXb
             rt = await db.QueryAsync("SELECT * FROM test WHERE COL_STR LIKE '%B%' ORDER BY COL_STR ");
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(4, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -541,10 +543,10 @@ namespace TestXb
             Assert.IsFalse(rt == null);
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(0, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -698,10 +700,10 @@ namespace TestXb
                 , "COL_STR");
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(4, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -751,10 +753,10 @@ namespace TestXb
             Assert.IsFalse(rt == null);
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(0, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -776,10 +778,10 @@ namespace TestXb
                                          , "COL_STR");
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(4, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));
@@ -829,10 +831,10 @@ namespace TestXb
             Assert.IsFalse(rt == null);
             Assert.AreEqual(4, rt.ColumnCount);
             Assert.AreEqual(0, rt.RowCount);
-            Assert.AreEqual("COL_STR", rt.Columns[0].ColumnName);
-            Assert.AreEqual("COL_DEC", rt.Columns[1].ColumnName);
-            Assert.AreEqual("COL_INT", rt.Columns[2].ColumnName);
-            Assert.AreEqual("COL_DATETIME", rt.Columns[3].ColumnName);
+            Assert.AreEqual("COL_STR", rt.ColumnNames[0]);
+            Assert.AreEqual("COL_DEC", rt.ColumnNames[1]);
+            Assert.AreEqual("COL_INT", rt.ColumnNames[2]);
+            Assert.AreEqual("COL_DATETIME", rt.ColumnNames[3]);
             Assert.AreEqual(0, rt.GetColumnIndex("COL_STR"));
             Assert.AreEqual(1, rt.GetColumnIndex("COL_DEC"));
             Assert.AreEqual(2, rt.GetColumnIndex("COL_INT"));

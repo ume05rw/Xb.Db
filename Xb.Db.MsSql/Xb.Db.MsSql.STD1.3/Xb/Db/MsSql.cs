@@ -134,7 +134,7 @@ namespace Xb.Db
 
 
             //Get Column info
-            sql = new System.Text.StringBuilder();
+            sql.Clear();
             sql.AppendFormat(" SELECT ");
             sql.AppendFormat("      TBL.NAME AS TABLE_NAME ");
             sql.AppendFormat("     ,COL.column_id AS COLUMN_INDEX ");
@@ -169,7 +169,7 @@ namespace Xb.Db
             sql.AppendFormat("     TBL.TYPE = 'U' ");
             sql.AppendFormat("     AND TYP.NAME != 'SYSNAME' ");
             sql.AppendFormat(" ORDER BY ");
-            sql.AppendFormat("     TBL.NAME ASC ");
+            sql.AppendFormat("      TBL.NAME ASC ");
             sql.AppendFormat("     ,COL.COLUMN_ID ASC ");
             this.StructureTable = this.Query(sql.ToString());
         }

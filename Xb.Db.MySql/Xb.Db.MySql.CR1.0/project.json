@@ -9,7 +9,8 @@
       "type": "platform",
       "version": "1.0.1"
     },
-    "MySql.Data": "7.0.6-IR31"},
+    "MySqlConnector": "0.*"
+  },
 
   "frameworks": {
     "netcoreapp1.0": {

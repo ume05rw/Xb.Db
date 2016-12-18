@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -130,12 +131,7 @@ namespace Xb.Db
             sql.AppendFormat(" ORDER BY ");
             sql.AppendFormat("     TABLE_NAME ");
             var dt = this.Query(sql.ToString());
-
-            var tableNames = new List<string>();
-            foreach (var row in dt.Rows)
-                tableNames.Add(row["TABLE_NAME"].ToString());
-
-            this.TableNames = tableNames.ToArray();
+            this.TableNames = dt.Rows.Select(row => row["TABLE_NAME"].ToString()).ToArray();
 
             //Get Column info
             sql.Clear();
@@ -201,7 +197,7 @@ namespace Xb.Db
         /// <returns></returns>
         public DbParameter GetParameter(string name = null
                                        , object value = null
-                                       , MySqlDbType type = MySqlDbType.VarChar)
+                                       , DbType type = DbType.String)
         {
             if (!string.IsNullOrEmpty(name)
                 && name.Substring(0, 1) != "@")
@@ -211,7 +207,8 @@ namespace Xb.Db
             param.Direction = ParameterDirection.Input;
             param.ParameterName = name ?? "";
             param.Value = value;
-            param.MySqlDbType = type;
+            param.DbType = type;
+            //param.MySqlDbType = type;
 
             return param;
         }

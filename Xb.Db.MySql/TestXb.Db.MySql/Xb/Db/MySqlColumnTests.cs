@@ -34,9 +34,9 @@ namespace TestsXb
                 throw ex;
             }
 
-            this._testModel = this._db.GetModel("test");
-            this._test2Model = this._db.GetModel("test2");
-            this._test3Model = this._db.GetModel("test3");
+            this._testModel = this._db.Models["test"];
+            this._test2Model = this._db.Models["test2"];
+            this._test3Model = this._db.Models["test3"];
 
             this.Out("MsSqlColumnTests.Constructor End.");
         }

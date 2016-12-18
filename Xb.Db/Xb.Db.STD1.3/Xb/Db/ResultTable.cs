@@ -10,7 +10,9 @@ namespace Xb.Db
 {
     public class ResultTable : IDisposable
     {
-        public ReadOnlyCollection<DbColumn> Columns { get; private set; }
+        //public ReadOnlyCollection<DbColumn> Columns { get; private set; }
+
+        public string[] ColumnNames { get; private set; }
         public List<ResultRow> Rows { get; private set; }
         public int ColumnCount { get; private set; }
         public int RowCount { get; private set; }
@@ -21,20 +23,27 @@ namespace Xb.Db
         public ResultTable(DbDataReader reader)
         {
             if (reader == null
-                || !reader.CanGetColumnSchema())
+                || reader.IsClosed)
             {
-                throw new ArgumentException("DbDataReader has no column schema");
+                throw new ArgumentException("Xb.Db.ResultTable: reader null or closed.");
             }
 
+            var colNames = new List<string>();
+            this._columnNameIndexes = new Dictionary<string, int>();
+            for (var i = 0; i < reader.FieldCount; i++)
+            {
+                var name = reader.GetName(i);
+                colNames.Add(name);
+                this._columnNameIndexes.Add(name, i);
+            }
+            
+            this.ColumnNames = colNames.ToArray();
 
             //Columns
-            this.Columns = reader.GetColumnSchema();
+            //this.Columns = reader.GetColumnSchema();
 
-            this._columnNameIndexes = new Dictionary<string, int>();
-            for (var i = 0; i < this.Columns.Count; i++)
-                this._columnNameIndexes.Add(this.Columns[i].ColumnName, i);
-
-            this.ColumnCount = this.Columns.Count;
+            
+            this.ColumnCount = this.ColumnNames.Length;
 
             //Rows
             this.Rows = new List<ResultRow>();
@@ -45,16 +54,16 @@ namespace Xb.Db
         }
 
 
-        public DbColumn Column(int index)
-        {
-            return this.Columns[index];
-        }
+        //public DbColumn Column(int index)
+        //{
+        //    return this.Columns[index];
+        //}
 
 
-        public DbColumn Column(string columnName)
-        {
-            return this.Columns[this.GetColumnIndex(columnName)];
-        }
+        //public DbColumn Column(string columnName)
+        //{
+        //    return this.Columns[this.GetColumnIndex(columnName)];
+        //}
 
 
         public int GetColumnIndex(string columnName)
@@ -74,8 +83,10 @@ namespace Xb.Db
                 row.Dispose();
 
             this.Rows = null;
-            this.Columns = null;
             this._columnNameIndexes = null;
+            this.ColumnNames = null;
+
+            //this.Columns = null;
         }
     }
 }
