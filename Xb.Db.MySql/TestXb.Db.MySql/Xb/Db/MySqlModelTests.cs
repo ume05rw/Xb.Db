@@ -6,39 +6,41 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 using TestXb.Db;
 using Xb.Db;
 
 namespace TestsXb
 {
     [TestClass()]
-    public class MsSqlModelTests : MsSqlBase, IDisposable
+    public class MySqlModelTests : MySqlBase, IDisposable
     {
-        private Xb.Db.MsSql _db;
+        private Xb.Db.MySql _db;
         private Xb.Db.Model _testModel;
         private Xb.Db.Model _test2Model;
         private Xb.Db.Model _test3Model;
 
-        public MsSqlModelTests() : base()
+        public MySqlModelTests() : base()
         {
             this.Out("MsSqlModelTests.Constructor Start.");
             try
             {
-                this._db = new Xb.Db.MsSql(MsSqlBase.NameTarget
-                                         , MsSqlBase.UserId
-                                         , MsSqlBase.Password
-                                         , MsSqlBase.Server
+                this._db = new Xb.Db.MySql(MySqlBase.NameTarget
+                                         , MySqlBase.UserId
+                                         , MySqlBase.Password
+                                         , MySqlBase.Server
                                          , ""
                                          , true);
             }
             catch (Exception ex)
             {
+                Xb.Util.Out(ex);
                 throw ex;
             }
 
-            this._testModel = this._db.GetModel("Test");
-            this._test2Model = this._db.GetModel("Test2");
-            this._test3Model = this._db.GetModel("Test3");
+            this._testModel = this._db.GetModel("test");
+            this._test2Model = this._db.GetModel("test2");
+            this._test3Model = this._db.GetModel("test3");
 
             this.Out("MsSqlModelTests.Constructor End.");
         }
@@ -48,16 +50,16 @@ namespace TestsXb
         {
             this.Out("ConstructorTest Start.");
 
-            Assert.AreEqual("Test", this._testModel.TableName);
+            Assert.AreEqual("test", this._testModel.TableName);
             Assert.AreEqual(0, this._testModel.PkeyColumns.Length);
             Assert.AreEqual(4, this._testModel.Columns.Length);
 
-            Assert.AreEqual("Test2", this._test2Model.TableName);
+            Assert.AreEqual("test2", this._test2Model.TableName);
             Assert.AreEqual(1, this._test2Model.PkeyColumns.Length);
             Assert.AreEqual("COL_STR", this._test2Model.PkeyColumns[0].Name);
             Assert.AreEqual(4, this._test2Model.Columns.Length);
 
-            Assert.AreEqual("Test3", this._test3Model.TableName);
+            Assert.AreEqual("test3", this._test3Model.TableName);
             Assert.AreEqual(2, this._test3Model.PkeyColumns.Length);
             Assert.AreEqual("COL_STR", this._test3Model.PkeyColumns[0].Name);
             Assert.AreEqual("COL_INT", this._test3Model.PkeyColumns[1].Name);
@@ -256,7 +258,7 @@ namespace TestsXb
         {
             this.Out("ValidateTest Start.");
 
-            Assert.AreEqual("Test", this._testModel.TableName);
+            Assert.AreEqual("test", this._testModel.TableName);
 
             Assert.AreEqual(4, this._testModel.Columns.Length);
 
@@ -347,8 +349,8 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            this._db.Execute(String.Format(sql, "Test2"));
-            this._db.Execute(String.Format(sql, "Test3"));
+            this._db.Execute(String.Format(sql, "test2"));
+            this._db.Execute(String.Format(sql, "test3"));
 
             var row = this._test2Model.NewRow();
             row["COL_STR"] = "P001";
@@ -368,7 +370,7 @@ namespace TestsXb
             errs = this._test2Model.Write(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test2 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test2 ORDER BY COL_STR ";
             var table = this._db.Query(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -393,7 +395,7 @@ namespace TestsXb
             errs = this._test2Model.Write(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test2 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test2 ORDER BY COL_STR ";
             table = this._db.Query(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -429,7 +431,7 @@ namespace TestsXb
             errs = this._test3Model.Write(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test3 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test3 ORDER BY COL_STR ";
             table = this._db.Query(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -454,7 +456,7 @@ namespace TestsXb
             errs = this._test3Model.Write(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test3 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test3 ORDER BY COL_STR ";
             table = this._db.Query(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -479,8 +481,8 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            await this._db.ExecuteAsync(String.Format(sql, "Test2"));
-            await this._db.ExecuteAsync(String.Format(sql, "Test3"));
+            await this._db.ExecuteAsync(String.Format(sql, "test2"));
+            await this._db.ExecuteAsync(String.Format(sql, "test3"));
 
             var row = this._test2Model.NewRow();
             row["COL_STR"] = "P001";
@@ -500,7 +502,7 @@ namespace TestsXb
             errs = await this._test2Model.WriteAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test2 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test2 ORDER BY COL_STR ";
             var table = await this._db.QueryAsync(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -525,7 +527,7 @@ namespace TestsXb
             errs = await this._test2Model.WriteAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test2 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test2 ORDER BY COL_STR ";
             table = await this._db.QueryAsync(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -561,7 +563,7 @@ namespace TestsXb
             errs = await this._test3Model.WriteAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test3 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test3 ORDER BY COL_STR ";
             table = await this._db.QueryAsync(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -586,7 +588,7 @@ namespace TestsXb
             errs = await this._test3Model.WriteAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test3 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test3 ORDER BY COL_STR ";
             table = await this._db.QueryAsync(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -611,8 +613,8 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            this._db.Execute(String.Format(sql, "Test"));
-            this._db.Execute(String.Format(sql, "Test3"));
+            this._db.Execute(String.Format(sql, "test"));
+            this._db.Execute(String.Format(sql, "test3"));
 
             var row = this._testModel.NewRow();
             row["COL_STR"] = "P001";
@@ -632,7 +634,7 @@ namespace TestsXb
             errs = this._testModel.Insert(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test ORDER BY COL_STR ";
+            sql = "SELECT * FROM test ORDER BY COL_STR ";
             var table = this._db.Query(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -667,7 +669,7 @@ namespace TestsXb
             errs = this._test3Model.Insert(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test3 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test3 ORDER BY COL_STR ";
             table = this._db.Query(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -693,8 +695,8 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            await this._db.ExecuteAsync(String.Format(sql, "Test"));
-            await this._db.ExecuteAsync(String.Format(sql, "Test3"));
+            await this._db.ExecuteAsync(String.Format(sql, "test"));
+            await this._db.ExecuteAsync(String.Format(sql, "test3"));
 
             var row = this._testModel.NewRow();
             row["COL_STR"] = "P001";
@@ -714,7 +716,7 @@ namespace TestsXb
             errs = await this._testModel.InsertAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test ORDER BY COL_STR ";
+            sql = "SELECT * FROM test ORDER BY COL_STR ";
             var table = await this._db.QueryAsync(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -749,7 +751,7 @@ namespace TestsXb
             errs = await this._test3Model.InsertAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            sql = "SELECT * FROM Test3 ORDER BY COL_STR ";
+            sql = "SELECT * FROM test3 ORDER BY COL_STR ";
             table = await this._db.QueryAsync(sql);
 
             Assert.AreEqual(2, table.Rows.Count);
@@ -776,12 +778,12 @@ namespace TestsXb
                         + ") VALUES ( "
                         + " '{1}', {2}, {3}, '{4}') ";
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P004", 2, 2, "1902-01-01")));
 
-            var select = "SELECT * FROM Test WHERE COL_STR='P002' AND COL_DEC=0";
+            var select = "SELECT * FROM test WHERE COL_STR='P002' AND COL_DEC=0";
             var table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -799,7 +801,7 @@ namespace TestsXb
             var errs = this._testModel.Update(row, new string[] { "COL_STR", "COL_DEC" });
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test WHERE COL_STR='P002' AND COL_DEC=0";
+            select = "SELECT * FROM test WHERE COL_STR='P002' AND COL_DEC=0";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -812,12 +814,12 @@ namespace TestsXb
 
 
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002'";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -835,7 +837,7 @@ namespace TestsXb
             errs = this._test2Model.Update(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002' AND COL_DEC=0";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002' AND COL_DEC=0";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -847,12 +849,12 @@ namespace TestsXb
 
 
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002'";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -870,7 +872,7 @@ namespace TestsXb
             errs = this._test3Model.Update(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002' AND COL_DEC=0";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002' AND COL_DEC=0";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -892,12 +894,12 @@ namespace TestsXb
                         + ") VALUES ( "
                         + " '{1}', {2}, {3}, '{4}') ";
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P004", 2, 2, "1902-01-01")));
 
-            var select = "SELECT * FROM Test WHERE COL_STR='P002' AND COL_DEC=0";
+            var select = "SELECT * FROM test WHERE COL_STR='P002' AND COL_DEC=0";
             var table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -915,7 +917,7 @@ namespace TestsXb
             var errs = await this._testModel.UpdateAsync(row, new string[] { "COL_STR", "COL_DEC" });
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test WHERE COL_STR='P002' AND COL_DEC=0";
+            select = "SELECT * FROM test WHERE COL_STR='P002' AND COL_DEC=0";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -928,12 +930,12 @@ namespace TestsXb
 
 
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -951,7 +953,7 @@ namespace TestsXb
             errs = await this._test2Model.UpdateAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002' AND COL_DEC=0";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002' AND COL_DEC=0";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -963,12 +965,12 @@ namespace TestsXb
 
 
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -986,7 +988,7 @@ namespace TestsXb
             errs = await this._test3Model.UpdateAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002' AND COL_DEC=0";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002' AND COL_DEC=0";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1008,12 +1010,12 @@ namespace TestsXb
             + ") VALUES ( "
             + " '{1}', {2}, {3}, '{4}') ";
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test", "P004", 2, 2, "1902-01-01")));
 
-            var select = "SELECT * FROM Test WHERE COL_STR='P002'";
+            var select = "SELECT * FROM test WHERE COL_STR='P002'";
             var table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1028,19 +1030,19 @@ namespace TestsXb
             var errs = this._testModel.Delete(row, "COL_STR");
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test WHERE COL_STR='P002'";
+            select = "SELECT * FROM test WHERE COL_STR='P002'";
             table = this._db.Query(select);
             Assert.AreEqual(0, table.Rows.Count);
 
 
 
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test2", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test2", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002'";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1054,19 +1056,19 @@ namespace TestsXb
             errs = this._test2Model.Delete(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002'";
             table = this._db.Query(select);
             Assert.AreEqual(0, table.Rows.Count);
 
 
 
 
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002'";
             table = this._db.Query(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1081,7 +1083,7 @@ namespace TestsXb
             errs = this._test3Model.Delete(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002'";
             table = this._db.Query(select);
             Assert.AreEqual(0, table.Rows.Count);
 
@@ -1098,12 +1100,12 @@ namespace TestsXb
             + ") VALUES ( "
             + " '{1}', {2}, {3}, '{4}') ";
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test", "P004", 2, 2, "1902-01-01")));
 
-            var select = "SELECT * FROM Test WHERE COL_STR='P002'";
+            var select = "SELECT * FROM test WHERE COL_STR='P002'";
             var table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1118,19 +1120,19 @@ namespace TestsXb
             var errs = await this._testModel.DeleteAsync(row, "COL_STR");
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test WHERE COL_STR='P002'";
+            select = "SELECT * FROM test WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
             Assert.AreEqual(0, table.Rows.Count);
 
 
 
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test2", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test2", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1144,19 +1146,19 @@ namespace TestsXb
             errs = await this._test2Model.DeleteAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test2 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
             Assert.AreEqual(0, table.Rows.Count);
 
 
 
 
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P001", 12.345, 1234, "2000-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P002", 0, 0, "1900-02-03 13:45:12")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P003", 1, 1, "1901-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P004", 2, 2, "1902-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P001", 12.345, 1234, "2000-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P002", 0, 0, "1900-02-03 13:45:12")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P003", 1, 1, "1901-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P004", 2, 2, "1902-01-01")));
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
 
             Assert.AreEqual(1, table.Rows.Count);
@@ -1171,7 +1173,7 @@ namespace TestsXb
             errs = await this._test3Model.DeleteAsync(row);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test3 WHERE COL_STR='P002'";
+            select = "SELECT * FROM test3 WHERE COL_STR='P002'";
             table = await this._db.QueryAsync(select);
             Assert.AreEqual(0, table.Rows.Count);
 
@@ -1185,7 +1187,7 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            this._db.Execute(String.Format(sql, "Test2"));
+            this._db.Execute(String.Format(sql, "test2"));
 
             var rows = new List<ResultRow>();
             ResultRow row;
@@ -1220,7 +1222,7 @@ namespace TestsXb
             var errs = this._test2Model.ReplaceUpdate(rows);
             Assert.AreEqual(0, errs.Length);
 
-            var select = "SELECT * FROM Test2 ORDER BY COL_STR";
+            var select = "SELECT * FROM test2 ORDER BY COL_STR";
             var table = this._db.Query(select);
             Assert.AreEqual(4, table.Rows.Count);
 
@@ -1284,7 +1286,7 @@ namespace TestsXb
             errs = this._test2Model.ReplaceUpdate(newRows, rows, "COL_DATETIME");
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 ORDER BY COL_STR";
+            select = "SELECT * FROM test2 ORDER BY COL_STR";
             table = this._db.Query(select);
             Assert.AreEqual(5, table.Rows.Count);
 
@@ -1318,7 +1320,7 @@ namespace TestsXb
             errs = this._test2Model.ReplaceUpdate(newRows);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 ORDER BY COL_STR";
+            select = "SELECT * FROM test2 ORDER BY COL_STR";
             table = this._db.Query(select);
             Assert.AreEqual(5, table.Rows.Count);
 
@@ -1358,7 +1360,7 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            await this._db.ExecuteAsync(String.Format(sql, "Test2"));
+            await this._db.ExecuteAsync(String.Format(sql, "test2"));
 
             var rows = new List<ResultRow>();
             ResultRow row;
@@ -1393,7 +1395,7 @@ namespace TestsXb
             var errs = await this._test2Model.ReplaceUpdateAsync(rows);
             Assert.AreEqual(0, errs.Length);
 
-            var select = "SELECT * FROM Test2 ORDER BY COL_STR";
+            var select = "SELECT * FROM test2 ORDER BY COL_STR";
             var table = await this._db.QueryAsync(select);
             Assert.AreEqual(4, table.Rows.Count);
 
@@ -1457,7 +1459,7 @@ namespace TestsXb
             errs = await this._test2Model.ReplaceUpdateAsync(newRows, rows, "COL_DATETIME");
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 ORDER BY COL_STR";
+            select = "SELECT * FROM test2 ORDER BY COL_STR";
             table = await this._db.QueryAsync(select);
             Assert.AreEqual(5, table.Rows.Count);
 
@@ -1491,7 +1493,7 @@ namespace TestsXb
             errs = await this._test2Model.ReplaceUpdateAsync(newRows);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test2 ORDER BY COL_STR";
+            select = "SELECT * FROM test2 ORDER BY COL_STR";
             table = await this._db.QueryAsync(select);
             Assert.AreEqual(5, table.Rows.Count);
 
@@ -1530,19 +1532,19 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            this._db.Execute(String.Format(sql, "Test3"));
+            this._db.Execute(String.Format(sql, "test3"));
 
             var insert = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
                             + ") VALUES ( "
                             + " '{1}', {2}, {3}, '{4}') ";
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P001", 1, 1, "2001-01-01")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P002", 2, 2, "2002-02-02")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P003", 3, 3, "2003-03-03")));
-            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "Test3", "P004", 4, 4, "2004-04-04")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P001", 1, 1, "2001-01-01")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P002", 2, 2, "2002-02-02")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P003", 3, 3, "2003-03-03")));
+            Assert.AreEqual(1, this._db.Execute(String.Format(insert, "test3", "P004", 4, 4, "2004-04-04")));
 
-            var select = "SELECT * FROM Test3 WHERE 1 = @num ORDER BY COL_STR";
-            var oldTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 1, SqlDbType.Int)});
-            var newTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 0, SqlDbType.Int) });
+            var select = "SELECT * FROM test3 WHERE 1 = @num ORDER BY COL_STR";
+            var oldTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 1, MySqlDbType.Int32)});
+            var newTable = this._db.Query(select, new DbParameter[] { this._db.GetParameter("num", 0, MySqlDbType.Int32) });
             Assert.AreEqual(4, oldTable.Rows.Count);
 
             Assert.AreEqual("P001", oldTable.Rows[0]["COL_STR"]);
@@ -1604,7 +1606,7 @@ namespace TestsXb
             var errs = this._test3Model.ReplaceUpdate(newTable, oldTable);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test3 ORDER BY COL_STR";
+            select = "SELECT * FROM test3 ORDER BY COL_STR";
             var table = this._db.Query(select);
             Assert.AreEqual(5, table.Rows.Count);
 
@@ -1643,19 +1645,19 @@ namespace TestsXb
 
             //一旦、テストデータを消す
             var sql = "DELETE FROM {0}";
-            await this._db.ExecuteAsync(String.Format(sql, "Test3"));
+            await this._db.ExecuteAsync(String.Format(sql, "test3"));
 
             var insert = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME"
                             + ") VALUES ( "
                             + " '{1}', {2}, {3}, '{4}') ";
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P001", 1, 1, "2001-01-01")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P002", 2, 2, "2002-02-02")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P003", 3, 3, "2003-03-03")));
-            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "Test3", "P004", 4, 4, "2004-04-04")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P001", 1, 1, "2001-01-01")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P002", 2, 2, "2002-02-02")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P003", 3, 3, "2003-03-03")));
+            Assert.AreEqual(1, await this._db.ExecuteAsync(String.Format(insert, "test3", "P004", 4, 4, "2004-04-04")));
 
-            var select = "SELECT * FROM Test3 WHERE 1 = @num ORDER BY COL_STR";
-            var oldTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 1, SqlDbType.Int) });
-            var newTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 0, SqlDbType.Int) });
+            var select = "SELECT * FROM test3 WHERE 1 = @num ORDER BY COL_STR";
+            var oldTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 1, MySqlDbType.Int32) });
+            var newTable = await this._db.QueryAsync(select, new DbParameter[] { this._db.GetParameter("num", 0, MySqlDbType.Int32) });
             Assert.AreEqual(4, oldTable.Rows.Count);
 
             Assert.AreEqual("P001", oldTable.Rows[0]["COL_STR"]);
@@ -1717,7 +1719,7 @@ namespace TestsXb
             var errs = await this._test3Model.ReplaceUpdateAsync(newTable, oldTable);
             Assert.AreEqual(0, errs.Length);
 
-            select = "SELECT * FROM Test3 ORDER BY COL_STR";
+            select = "SELECT * FROM test3 ORDER BY COL_STR";
             var table = await this._db.QueryAsync(select);
             Assert.AreEqual(5, table.Rows.Count);
 

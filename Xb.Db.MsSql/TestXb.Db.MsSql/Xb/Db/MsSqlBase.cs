@@ -18,15 +18,11 @@ namespace TestXb.Db
 
         public MsSqlBase()
         {
-            this.Out("MsSqlTestBase.Constructor Start.");
+            this.Out("MsSqlBase.Constructor Start.");
 
             this.Connection = new SqlConnection();
             this.Connection.ConnectionString
-                = string.Format("server={0};user id={1}; password={2}; database={3}; pooling=false;",
-                                Server,
-                                UserId,
-                                Password,
-                                NameMaster);
+                = $"server={Server};user id={UserId}; password={Password}; database={NameMaster}; pooling=false;";
 
             try
             {
@@ -34,30 +30,27 @@ namespace TestXb.Db
             }
             catch (Exception ex)
             {
+                Xb.Util.Out(ex);
                 throw ex;
             }
 
             try
-            { this.Exec("DROP DATABASE " + NameTarget); }
+            { this.Exec($"DROP DATABASE {NameTarget}"); }
             catch (Exception) { }
 
-            string sql
-                = $"CREATE DATABASE {NameTarget} CONTAINMENT = NONE ON  PRIMARY "
-                + $"( NAME = N'{NameTarget}', "
-                + $"FILENAME = N'C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\DATA\\{NameTarget}.mdf')";
+            var sql= $"CREATE DATABASE {NameTarget}";
             this.Exec(sql);
-
             this.Exec($"USE {NameTarget}");
 
             var insertTpl = "INSERT INTO {0} (COL_STR, COL_DEC, COL_INT, COL_DATETIME) VALUES ({1}, {2}, {3}, {4});";
 
 
-            sql = " CREATE TABLE Test( " +
-                  "     COL_STR varchar(10) NOT NULL, " +
-                  "     COL_DEC decimal(5,3) NULL," +
-                  "     COL_INT int NULL," +
-                  "     COL_DATETIME DateTime NULL " +
-                  " ) ON [PRIMARY]";
+            sql = " CREATE TABLE Test( " 
+                + "     COL_STR varchar(10) NOT NULL, " 
+                + "     COL_DEC decimal(5,3) NULL," 
+                + "     COL_INT int NULL," 
+                + "     COL_DATETIME DateTime NULL " 
+                + " ) ON [PRIMARY]";
             this.Exec(sql);
             this.Exec(string.Format(insertTpl, "Test", "'ABC'", 1, 1, "'2001-01-01'"));
             this.Exec(string.Format(insertTpl, "Test", "'ABC'", 1, 1, "'2001-01-01'"));
@@ -66,26 +59,26 @@ namespace TestXb.Db
             this.Exec(string.Format(insertTpl, "Test", "'CC'", 12.345, 12345, "'2016-12-13'"));
             this.Exec(string.Format(insertTpl, "Test", "'KEY'", 0, "NULL", "'2000-12-31'"));
 
-            sql = " CREATE TABLE Test2( " +
-                  "     COL_STR varchar(10) NOT NULL, " +
-                  "     COL_DEC decimal(5,3) NULL," +
-                  "     COL_INT int NULL," +
-                  "     COL_DATETIME DateTime NULL " +
-                  " CONSTRAINT [PK_Test2] PRIMARY KEY CLUSTERED (COL_STR ASC) " +
-                  " ) ON [PRIMARY]";
+            sql = " CREATE TABLE Test2( " 
+                + "     COL_STR varchar(10) NOT NULL, " 
+                + "     COL_DEC decimal(5,3) NULL," 
+                + "     COL_INT int NULL," 
+                + "     COL_DATETIME DateTime NULL " 
+                + " CONSTRAINT [PK_Test2] PRIMARY KEY CLUSTERED (COL_STR ASC) " 
+                + " ) ON [PRIMARY]";
             this.Exec(sql);
             this.Exec(string.Format(insertTpl, "Test2", "'ABC'", 1, 1, "'2001-01-01'"));
             this.Exec(string.Format(insertTpl, "Test2", "'BB'", 12.345, 12345, "'2016-12-13'"));
             this.Exec(string.Format(insertTpl, "Test2", "'CC'", 12.345, 12345, "'2016-12-13'"));
             this.Exec(string.Format(insertTpl, "Test2", "'KEY'", 0, "NULL", "'2000-12-31'"));
 
-            sql = " CREATE TABLE Test3( " +
-                  "     COL_STR varchar(10) NOT NULL, " +
-                  "     COL_DEC decimal(5,3) NULL," +
-                  "     COL_INT int NOT NULL," +
-                  "     COL_DATETIME DateTime NULL " +
-                  " CONSTRAINT [PK_Test3] PRIMARY KEY CLUSTERED (COL_STR ASC, COL_INT ASC) " +
-                  " ) ON [PRIMARY]";
+            sql = " CREATE TABLE Test3( " 
+                + "     COL_STR varchar(10) NOT NULL, " 
+                + "     COL_DEC decimal(5,3) NULL," 
+                + "     COL_INT int NOT NULL," 
+                + "     COL_DATETIME DateTime NULL " 
+                + " CONSTRAINT [PK_Test3] PRIMARY KEY CLUSTERED (COL_STR ASC, COL_INT ASC) " 
+                + " ) ON [PRIMARY]";
             this.Exec(sql);
             this.Exec(string.Format(insertTpl, "Test3", "'ABC'", 1, 1, "'2001-01-01'"));
             this.Exec(string.Format(insertTpl, "Test3", "'ABC'", 1, 2, "'2001-01-01'"));
@@ -118,7 +111,7 @@ namespace TestXb.Db
 
         public override void Dispose()
         {
-            this.Out("MsSqlTestBase.Dispose Start.");
+            this.Out("MsSqlBase.Dispose Start.");
 
             this.Connection.Close();
             this.Connection.Dispose();
@@ -127,11 +120,7 @@ namespace TestXb.Db
 
             this.Connection = new SqlConnection();
             this.Connection.ConnectionString
-                = string.Format("server={0};user id={1}; password={2}; database={3}; pooling=false;",
-                                Server,
-                                UserId,
-                                Password,
-                                NameMaster);
+                = $"server={Server};user id={UserId}; password={Password}; database={NameMaster}; pooling=false;";
             this.Connection.Open();
             this.Exec("DROP DATABASE MsSqlTests");
             this.Connection.Close();

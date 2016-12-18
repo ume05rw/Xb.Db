@@ -14,9 +14,10 @@ namespace Xb.Db
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public class Mysql : Xb.Db.DbBase
+    public class MySql : Xb.Db.DbBase
     {
         /// <summary>
+        /// Constructor
         /// コンストラクタ
         /// </summary>
         /// <param name="name"></param>
@@ -27,7 +28,7 @@ namespace Xb.Db
         /// <param name="isBuildModels"></param>
         /// <param name="encoding"></param>
         /// <remarks></remarks>
-        public Mysql(string name
+        public MySql(string name
                    , string user = "root"
                    , string password = ""
                    , string address = "localhost"
@@ -39,14 +40,14 @@ namespace Xb.Db
                  , password
                  , address
                  , additionalString
-                 , isBuildModels
-                 , encoding)
+                 , isBuildModels)
         {
-            this.Init(isBuildModels, encoding);
+            this.Init(encoding);
         }
 
 
         /// <summary>
+        /// Constructor
         /// コンストラクタ
         /// </summary>
         /// <param name="connection"></param>
@@ -54,35 +55,35 @@ namespace Xb.Db
         /// <param name="isBuildModels"></param>
         /// <param name="encoding"></param>
         /// <remarks></remarks>
-        public Mysql(MySqlConnection connection
+        public MySql(MySqlConnection connection
                    , string name
                    , bool isBuildModels = true
                    , Encoding encoding = null)
             : base(connection
-                  , name
-                  , isBuildModels
-                  , encoding)
+                 , name
+                 , isBuildModels)
         {
-            this.Init(isBuildModels, encoding);
+            this.Init(encoding);
         }
 
 
-        private void Init(bool isBuildModels
-                        , Encoding encoding)
+        private void Init(Encoding encoding)
         {
             this.TranCmdBegin = "START TRANSACTION";
             this.SqlFind = "SELECT * FROM {0} WHERE {1} LIMIT 1 ";
             this.Encoding = encoding ?? Encoding.UTF8;
+            this.StringSizeCriteria = StringSizeCriteriaType.Length;
         }
 
 
         /// <summary>
+        /// Connect DB
         /// DBへ接続する
         /// </summary>>
         /// <remarks></remarks>
         protected override void Open()
         {
-            //接続設定を文字列でセット
+            //build connection string
             string connectionString =
                 string.Format("server={0};user id={1}; password={2}; database={3}; pooling=false{4}",
                     this.Address,
@@ -94,6 +95,7 @@ namespace Xb.Db
                         : "; " + this.AdditionalConnectionString);
             try
             {
+                //connect DB
                 this.Connection = new MySqlConnection(connectionString);
                 this.Connection.Open();
             }
@@ -103,17 +105,21 @@ namespace Xb.Db
                 this.Connection = null;
                 throw ex;
             }
+
+            //init transaction
+            this.ResetTransaction(false);
         }
 
 
         /// <summary>
+        /// Get Table-Structure
         /// 接続先DBの構造を取得する。
         /// </summary>
         /// <remarks></remarks>
 
         protected override void GetStructure()
         {
-            //テーブルリストを取得する。
+            //get Table list
             var sql = new System.Text.StringBuilder();
             sql.AppendFormat(" SELECT ");
             sql.AppendFormat("     TABLE_NAME ");
@@ -127,14 +133,15 @@ namespace Xb.Db
 
             var tableNames = new List<string>();
             foreach (var row in dt.Rows)
-                tableNames.Add(row["TABLE_NAME"].ToString().ToUpper());
+                tableNames.Add(row["TABLE_NAME"].ToString());
 
             this.TableNames = tableNames.ToArray();
 
-            //カラム情報を取得する。
+            //Get Column info
             sql.Clear();
             sql.AppendFormat(" SELECT ");
-            sql.AppendFormat("      UCASE(TABLE_NAME) AS TABLE_NAME ");
+            //sql.AppendFormat("      UCASE(TABLE_NAME) AS TABLE_NAME ");
+            sql.AppendFormat("      TABLE_NAME AS TABLE_NAME ");
             sql.AppendFormat("     ,ORDINAL_POSITION AS COLUMN_INDEX ");
             sql.AppendFormat("     ,COLUMN_NAME AS COLUMN_NAME ");
             sql.AppendFormat("     ,DATA_TYPE AS 'TYPE' ");
@@ -160,6 +167,34 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Get Quoted-String
+        /// 文字列項目のクォートラップ処理
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public override string Quote(string text
+                                   , LikeMarkPosition likeMarkPos = LikeMarkPosition.None)
+        {
+            switch (likeMarkPos)
+            {
+                case LikeMarkPosition.Before:
+                    text = "%" + text;
+                    break;
+                case LikeMarkPosition.After:
+                    text += "%";
+                    break;
+                case LikeMarkPosition.Both:
+                    text = "%" + text + "%";
+                    break;
+                case LikeMarkPosition.None:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(likeMarkPos), likeMarkPos, null);
+            }
+            return Xb.Str.MySqlQuote(text);
+        }
+
+        /// <summary>
         /// Get DbParameter object.
         /// DbParameterオブジェクトを取得する。
         /// </summary>
@@ -174,7 +209,7 @@ namespace Xb.Db
 
             var param = new MySqlParameter();
             param.Direction = ParameterDirection.Input;
-            param.ParameterName = name;
+            param.ParameterName = name ?? "";
             param.Value = value;
             param.MySqlDbType = type;
 
@@ -206,6 +241,7 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Get Database backup file
         /// データベースのバックアップファイルを取得する。
         /// </summary>
         /// <param name="fileName"></param>

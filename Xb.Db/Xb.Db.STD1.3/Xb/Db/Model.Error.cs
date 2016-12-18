@@ -13,6 +13,62 @@ namespace Xb.Db
         public class Error
         {
             /// <summary>
+            /// Error type
+            /// エラー区分
+            /// </summary>
+            public enum ErrorType
+            {
+                /// <summary>
+                /// Validation OK
+                /// エラー無し
+                /// </summary>
+                NoError,
+
+                /// <summary>
+                /// Charactor length overflow
+                /// 文字長超過
+                /// </summary>
+                LengthOver,
+
+                /// <summary>
+                /// Value is not number
+                /// 数値でない値
+                /// </summary>
+                NotNumber,
+
+                /// <summary>
+                /// Number of digits of integer part exceeded
+                /// 整数部分の桁数超過
+                /// </summary>
+                IntegerOver,
+
+                /// <summary>
+                /// Number of digits of decimal part exceeded
+                /// 小数部分の桁数超過
+                /// </summary>
+                DecimalOver,
+
+                /// <summary>
+                /// Null Not Permitted
+                /// Nullが許可されていないカラムでNullを検出
+                /// </summary>
+                NotPermittedNull,
+
+                /// <summary>
+                /// Value is not datetime
+                /// 日付型でない値
+                /// </summary>
+                NotDateTime,
+
+                /// <summary>
+                /// Unknown error
+                /// 未定義のエラー
+                /// </summary>
+                NotDefinedError
+            }
+
+
+            /// <summary>
             /// Name
             /// エラー名
             /// </summary>

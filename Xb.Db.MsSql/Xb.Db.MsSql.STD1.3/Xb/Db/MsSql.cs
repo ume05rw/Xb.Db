@@ -39,10 +39,9 @@ namespace Xb.Db
                  , password
                  , address
                  , additionalString
-                 , isBuildModels
-                 , encoding)
+                 , isBuildModels)
         {
-            this.Init(isBuildModels, encoding);
+            this.Init(encoding);
         }
 
 
@@ -60,15 +59,13 @@ namespace Xb.Db
                    , Encoding encoding = null)
             : base (connection
                   , name
-                  , isBuildModels
-                  , encoding)
+                  , isBuildModels)
         {
-            this.Init(isBuildModels, encoding);
+            this.Init(encoding);
         }
 
 
-        private void Init(bool isBuildModels
-                        , Encoding encoding)
+        private void Init(Encoding encoding)
         {
             this.TranCmdBegin = "BEGIN TRANSACTION";
             this.TranCmdCommit = "COMMIT TRANSACTION";
@@ -99,8 +96,7 @@ namespace Xb.Db
             try
             {
                 //connect DB
-                this.Connection = new SqlConnection();
-                this.Connection.ConnectionString = connectionString;
+                this.Connection = new SqlConnection(connectionString);
                 this.Connection.Open();
             }
             catch (Exception ex)
@@ -194,7 +190,7 @@ namespace Xb.Db
 
             var param = new SqlParameter();
             param.Direction = ParameterDirection.Input;
-            param.ParameterName = name;
+            param.ParameterName = name ?? "";
             param.Value = value;
             param.SqlDbType = type;
             

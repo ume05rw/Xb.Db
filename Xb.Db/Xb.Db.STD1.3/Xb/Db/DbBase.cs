@@ -16,6 +16,23 @@ namespace Xb.Db
     public class DbBase : IDisposable
     {
         /// <summary>
+        /// String-Column size type
+        /// 文字型カラムのサイズ判定基準
+        /// </summary>
+        public enum StringSizeCriteriaType
+        {
+            /// <summary>
+            /// Byte count
+            /// </summary>
+            Byte,
+
+            /// <summary>
+            /// Charactor count
+            /// </summary>
+            Length
+        }
+
+        /// <summary>
         /// Wild-Card Position type
         /// Like検索時のワイルドカード位置
         /// </summary>
@@ -112,22 +129,14 @@ namespace Xb.Db
         /// Encode
         /// 文字列処理時のエンコードオブジェクト
         /// </summary>
-        /// <value></value>
-        /// <returns></returns>
-        /// <remarks></remarks>
-        public Encoding Encoding
-        {
-            get { return this._encoding; }
-            protected set
-            {
-                this._encoding = value;
+        public Encoding Encoding { get; set; }
 
-                if (this.Models != null)
-                    foreach (var model in this.Models.Values)
-                        model.Encoding = this.Encoding;
-            }
-        }
-        private Encoding _encoding;
+        /// <summary>
+        /// String-Column size type
+        /// 文字型カラムのサイズ判定基準
+        /// </summary>
+        public StringSizeCriteriaType StringSizeCriteria { get; protected set; }
+
 
         /// <summary>
         /// Transaction flag
@@ -180,21 +189,20 @@ namespace Xb.Db
         /// <param name="address"></param>
         /// <param name="additionalString"></param>
         /// <param name="isBuildModels"></param>
-        /// <param name="encoding"></param>
         protected DbBase(string name
                        , string user = ""
                        , string password = ""
                        , string address = ""
                        , string additionalString = ""
-                       , bool isBuildModels = true
-                       , Encoding encoding = null)
+                       , bool isBuildModels = true)
         {
             this.Address = address;
             this.Name = name;
             this.User = user;
             this.Password = password;
             this.AdditionalConnectionString = additionalString;
-            this.Encoding = encoding ?? System.Text.Encoding.UTF8;
+            this.Encoding = System.Text.Encoding.UTF8;
+            this.StringSizeCriteria = StringSizeCriteriaType.Byte;
 
             //Connect
             this.Open();
@@ -218,14 +226,13 @@ namespace Xb.Db
         /// <param name="connection"></param>
         /// <param name="name"></param>
         /// <param name="isBuildModels"></param>
-        /// <param name="encoding"></param>
         protected DbBase(DbConnection connection
                        , string name
-                       , bool isBuildModels = true
-                       , Encoding encoding = null)
+                       , bool isBuildModels = true)
         {
             this.Name = name;
-            this.Encoding = encoding ?? System.Text.Encoding.UTF8;
+            this.Encoding = System.Text.Encoding.UTF8;
+            this.StringSizeCriteria = StringSizeCriteriaType.Byte;
 
             if (isBuildModels)
             {
@@ -315,11 +322,8 @@ namespace Xb.Db
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        /// <remarks>
-        /// for MsSqlServer, SqLite. override on Mysql
-        /// 標準をSqlServer/SQLite風クォートにセット。MySQLではOverrideする。
-        /// </remarks>
-        public virtual string Quote(string text, LikeMarkPosition likeMarkPos = LikeMarkPosition.None)
+        public virtual string Quote(string text
+                                  , LikeMarkPosition likeMarkPos = LikeMarkPosition.None)
         {
             switch (likeMarkPos)
             {

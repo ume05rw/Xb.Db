@@ -14,6 +14,37 @@ namespace Xb.Db
         public class Column : IDisposable
         {
             /// <summary>
+            /// Column data type
+            /// カラムの型区分
+            /// </summary>
+            public enum ColumnType
+            {
+                /// <summary>
+                /// String
+                /// 文字型
+                /// </summary>
+                String,
+
+                /// <summary>
+                /// Number
+                /// 数値型
+                /// </summary>
+                Number,
+
+                /// <summary>
+                /// DateTime
+                /// 日付型
+                /// </summary>
+                DateTime,
+
+                /// <summary>
+                /// Others, NOT validation target
+                /// その他(型・桁数チェック対象外)
+                /// </summary>
+                Others
+            }
+
+            /// <summary>
             /// Name
             /// カラム名
             /// </summary>
@@ -105,7 +136,7 @@ namespace Xb.Db
             /// 値の妥当性検証を行う。
             /// </summary>
             /// <returns></returns>
-            public ErrorType Validate(object value)
+            public Error.ErrorType Validate(object value)
             {
                 var isNull = (value == null || value == DBNull.Value);
                 var valueString = isNull ? "" : value.ToString();
@@ -115,12 +146,12 @@ namespace Xb.Db
                 {
                     if (!this.IsNullable)
                     {
-                        return ErrorType.NotPermittedNull;
+                        return Error.ErrorType.NotPermittedNull;
                     }
                     else
                     {
                         //Nullable ok and null
-                        return ErrorType.NoError;
+                        return Error.ErrorType.NoError;
                     }
                 }
 
@@ -128,10 +159,25 @@ namespace Xb.Db
                 switch (this.Type)
                 {
                     case ColumnType.String:
-                        //length
-                        if (this.Model.Encoding.GetBytes(valueString).Length > this.MaxLength)
+
+                        //srring size
+                        switch (this.Model.Db.StringSizeCriteria)
                         {
-                            return ErrorType.LengthOver;
+                            case DbBase.StringSizeCriteriaType.Byte:
+
+                                if (this.Model.Db.Encoding.GetBytes(valueString).Length > this.MaxLength)
+                                    return Error.ErrorType.LengthOver;
+
+                                break;
+
+                            case DbBase.StringSizeCriteriaType.Length:
+
+                                if(valueString.Length > this.MaxLength)
+                                    return Error.ErrorType.LengthOver;
+
+                                break;
+                            default:
+                                throw new MissingFieldException("Xb.Db.Model.Column.Validate: Unknown StringSizeCriteriaType");
                         }
                         break;
 
@@ -141,7 +187,7 @@ namespace Xb.Db
                         decimal valDec = default(decimal);
                         if (!decimal.TryParse(valueString, out valDec))
                         {
-                            return ErrorType.NotNumber;
+                            return Error.ErrorType.NotNumber;
                         }
 
                         //switch exist decimal point
@@ -151,7 +197,7 @@ namespace Xb.Db
                             //Integer length
                             if (System.Math.Abs(valDec).ToString().Length > this.MaxInteger)
                             {
-                                return ErrorType.IntegerOver;
+                                return Error.ErrorType.IntegerOver;
                             }
                         }
                         else
@@ -161,12 +207,12 @@ namespace Xb.Db
                             var intString = ((int)Math.Floor(Math.Abs(valDec))).ToString();
                             if (intString.Length > this.MaxInteger)
                             {
-                                return ErrorType.IntegerOver;
+                                return Error.ErrorType.IntegerOver;
                             }
                             //decimal length
                             if (valueString.Substring(valueString.IndexOf('.')).Length - 1 > this.MaxDecimal)
                             {
-                                return ErrorType.DecimalOver;
+                                return Error.ErrorType.DecimalOver;
                             }
                         }
                         break;
@@ -176,7 +222,7 @@ namespace Xb.Db
                         DateTime tmpDate = default(DateTime);
                         if (!DateTime.TryParse(valueString, out tmpDate))
                         {
-                            return ErrorType.NotDateTime;
+                            return Error.ErrorType.NotDateTime;
                         }
                         break;
 
@@ -186,7 +232,7 @@ namespace Xb.Db
                         break;
                 }
 
-                return ErrorType.NoError;
+                return Error.ErrorType.NoError;
             }
 
             /// <summary>
@@ -204,7 +250,7 @@ namespace Xb.Db
                     return "null";
                 }
 
-                if (this.Validate(value) != ErrorType.NoError)
+                if (this.Validate(value) != Error.ErrorType.NoError)
                 {
                     return "null";
                 }

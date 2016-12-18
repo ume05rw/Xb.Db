@@ -10,22 +10,22 @@ using Xb.Db;
 namespace TestsXb
 {
     [TestClass()]
-    public class MsSqlColumnTests : MsSqlBase, IDisposable
+    public class MySqlColumnTests : MySqlBase, IDisposable
     {
-        private Xb.Db.MsSql _db;
+        private Xb.Db.MySql _db;
         private Xb.Db.Model _testModel;
         private Xb.Db.Model _test2Model;
         private Xb.Db.Model _test3Model;
 
-        public MsSqlColumnTests() : base()
+        public MySqlColumnTests() : base()
         {
             this.Out("MsSqlColumnTests.Constructor Start.");
             try
             {
-                this._db = new Xb.Db.MsSql(MsSqlBase.NameTarget
-                                         , MsSqlBase.UserId
-                                         , MsSqlBase.Password
-                                         , MsSqlBase.Server
+                this._db = new Xb.Db.MySql(MySqlBase.NameTarget
+                                         , MySqlBase.UserId
+                                         , MySqlBase.Password
+                                         , MySqlBase.Server
                                          , ""
                                          , true);
             }
@@ -34,9 +34,9 @@ namespace TestsXb
                 throw ex;
             }
 
-            this._testModel = this._db.GetModel("Test");
-            this._test2Model = this._db.GetModel("Test2");
-            this._test3Model = this._db.GetModel("Test3");
+            this._testModel = this._db.GetModel("test");
+            this._test2Model = this._db.GetModel("test2");
+            this._test3Model = this._db.GetModel("test3");
 
             this.Out("MsSqlColumnTests.Constructor End.");
         }
@@ -93,11 +93,11 @@ namespace TestsXb
             Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NoError, col.Validate("あ"));
             Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NoError, col.Validate("@"));
             Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NoError, col.Validate("1234567890"));
-            Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NoError, col.Validate("１２３４５"));
+            Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NoError, col.Validate("１２３４５６７８９０"));
 
             Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NotPermittedNull, col.Validate(null));
             Assert.AreEqual(Xb.Db.Model.Error.ErrorType.LengthOver, col.Validate("12345678901"));
-            Assert.AreEqual(Xb.Db.Model.Error.ErrorType.LengthOver, col.Validate("１２３４５6"));
+            Assert.AreEqual(Xb.Db.Model.Error.ErrorType.LengthOver, col.Validate("１２３４５６７８９０1"));
 
             col = this._testModel.GetColumn("COL_DEC");
             Assert.AreEqual(Xb.Db.Model.Error.ErrorType.NoError, col.Validate(1));

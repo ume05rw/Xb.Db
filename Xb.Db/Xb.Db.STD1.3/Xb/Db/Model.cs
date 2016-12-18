@@ -15,92 +15,6 @@ namespace Xb.Db
     public partial class Model : IDisposable
     {
         /// <summary>
-        /// Column data type
-        /// カラムの型区分
-        /// </summary>
-        public enum ColumnType
-        {
-            /// <summary>
-            /// String
-            /// 文字型
-            /// </summary>
-            String,
-
-            /// <summary>
-            /// Number
-            /// 数値型
-            /// </summary>
-            Number,
-
-            /// <summary>
-            /// DateTime
-            /// 日付型
-            /// </summary>
-            DateTime,
-
-            /// <summary>
-            /// Others, NOT validation target
-            /// その他(型・桁数チェック対象外)
-            /// </summary>
-            Others
-        }
-
-        /// <summary>
-        /// Error type
-        /// エラー区分
-        /// </summary>
-        public enum ErrorType
-        {
-            /// <summary>
-            /// Validation OK
-            /// エラー無し
-            /// </summary>
-            NoError,
-
-            /// <summary>
-            /// Charactor length overflow
-            /// 文字長超過
-            /// </summary>
-            LengthOver,
-
-            /// <summary>
-            /// Value is not number
-            /// 数値でない値
-            /// </summary>
-            NotNumber,
-
-            /// <summary>
-            /// Number of digits of integer part exceeded
-            /// 整数部分の桁数超過
-            /// </summary>
-            IntegerOver,
-
-            /// <summary>
-            /// Number of digits of decimal part exceeded
-            /// 小数部分の桁数超過
-            /// </summary>
-            DecimalOver,
-
-            /// <summary>
-            /// Null Not Permitted
-            /// Nullが許可されていないカラムでNullを検出
-            /// </summary>
-            NotPermittedNull,
-
-            /// <summary>
-            /// Value is not datetime
-            /// 日付型でない値
-            /// </summary>
-            NotDateTime,
-
-            /// <summary>
-            /// Unknown error
-            /// 未定義のエラー
-            /// </summary>
-            NotDefinedError
-        }
-
-        /// <summary>
         /// String column type
         /// 文字型として認識する型文字列列挙
         /// </summary>
@@ -147,18 +61,17 @@ namespace Xb.Db
           , "TIME"
         };
 
-
-        /// <summary>
-        /// Xb.Db-Object ref.
-        /// DB接続オブジェクト参照
-        /// </summary>
-        private Xb.Db.DbBase _db;
-
         /// <summary>
         /// Row-Structure template
         /// テーブル行構造テンプレート用ResultTable
         /// </summary>
         private ResultTable _templateTable;
+
+        /// <summary>
+        /// Xb.Db-Object ref.
+        /// DB接続オブジェクト参照
+        /// </summary>
+        protected Xb.Db.DbBase Db { get; set; }
 
         /// <summary>
         /// Table name
@@ -178,11 +91,6 @@ namespace Xb.Db
         /// </summary>
         public Db.Model.Column[] PkeyColumns { get; private set; }
 
-        /// <summary>
-        /// String encoding
-        /// 文字列値のときのエンコード形式
-        /// </summary>
-        public System.Text.Encoding Encoding { get; set; }
 
         /// <summary>
         /// Constructor
@@ -202,7 +110,7 @@ namespace Xb.Db
             }
 
             //get Xb.Db.DbBase ref.
-            this._db = db;
+            this.Db = db;
 
             this.TableName = infoRows[0]["TABLE_NAME"].ToString();
             this.Columns = new Xb.Db.Model.Column[infoRows.Length];
@@ -215,11 +123,11 @@ namespace Xb.Db
                 var maxInteger = 0;
                 var maxDecimal = 0;
                 var maxLength = 0;
-                var type = default(ColumnType);
+                var type = default(Column.ColumnType);
 
                 if (TypesOfNumber.Contains(typeString))
                 {
-                    type = ColumnType.Number;
+                    type = Column.ColumnType.Number;
                     maxInteger = int.Parse(infoRows[i]["NUM_PREC"].ToString());
                     maxDecimal = int.Parse(infoRows[i]["NUM_SCALE"].ToString());
                     maxInteger -= maxDecimal;
@@ -231,7 +139,7 @@ namespace Xb.Db
                 }
                 else if (TypesOfString.Contains(typeString))
                 {
-                    type = ColumnType.String;
+                    type = Column.ColumnType.String;
 
                     //TODO: MySQL-LongText型のような巨大なテキスト型のとき、文字数制限をしないようにする。
                     if (!int.TryParse(infoRows[i]["CHAR_LENGTH"].ToString(), out maxLength))
@@ -244,7 +152,7 @@ namespace Xb.Db
                 }
                 else if (TypesOfDateTime.Contains(typeString))
                 {
-                    type = ColumnType.DateTime;
+                    type = Column.ColumnType.DateTime;
                     maxLength = 21;
                     maxInteger = -1;
                     maxDecimal = -1;
@@ -252,7 +160,7 @@ namespace Xb.Db
                 }
                 else
                 {
-                    type = ColumnType.Others;
+                    type = Column.ColumnType.Others;
                     maxLength = -1;
                     maxInteger = -1;
                     maxDecimal = -1;
@@ -278,7 +186,7 @@ namespace Xb.Db
                 }
             }
 
-            this._templateTable = this._db.Query($"SELECT * FROM {this.TableName} WHERE 1 = 0 ");
+            this._templateTable = this.Db.Query($"SELECT * FROM {this.TableName} WHERE 1 = 0 ");
 
             this.PkeyColumns = pkeyColumns.ToArray();
         }
@@ -337,7 +245,7 @@ namespace Xb.Db
             if (this.PkeyColumns.Length != 1)
                 throw new ArgumentException("Xb.Db.Mode.Find: multiple primary key columns");
 
-            return this._db.Find(this.TableName,
+            return this.Db.Find(this.TableName,
                                  this.PkeyColumns[0].GetSqlFormula(primaryKeyValue));
         }
 
@@ -382,7 +290,7 @@ namespace Xb.Db
             for (var i = 0; i <= this.PkeyColumns.Length - 1; i++)
                 wheres.Add(this.PkeyColumns[i].GetSqlFormula(primaryKeyValues[i]));
 
-            return this._db.Find(this.TableName, string.Join(" AND ", wheres));
+            return this.Db.Find(this.TableName, string.Join(" AND ", wheres));
         }
 
 
@@ -417,7 +325,7 @@ namespace Xb.Db
         public virtual ResultTable FindAll(string whereString = null
                                          , string orderString = null)
         {
-            return this._db.FindAll(this.TableName, whereString, orderString);
+            return this.Db.FindAll(this.TableName, whereString, orderString);
         }
 
 
@@ -473,7 +381,7 @@ namespace Xb.Db
 
                 var errorType = col.Validate(row[col.Name]);
 
-                if (errorType != Db.Model.ErrorType.NoError)
+                if (errorType != Xb.Db.Model.Error.ErrorType.NoError)
                     errors.Add(new Xb.Db.Model.Error(col.Name, this.NullFormat(row[col.Name]), errorType));
             }
 
@@ -508,7 +416,7 @@ namespace Xb.Db
             {
                 return new Xb.Db.Model.Error[]
                 {
-                    new Xb.Db.Model.Error("-", "-", ErrorType.NotDefinedError,
+                    new Xb.Db.Model.Error("-", "-", Error.ErrorType.NotDefinedError,
                                           "Write method needs Primary-Key")
                 };
             }
@@ -523,7 +431,7 @@ namespace Xb.Db
             }
 
             var sql = $"SELECT 1 FROM {this.TableName} WHERE {string.Join(" AND ", wheres)} ";
-            var dt = this._db.Query(sql);
+            var dt = this.Db.Query(sql);
 
             if (dt == null
                 || dt.RowCount <= 0)
@@ -588,13 +496,13 @@ namespace Xb.Db
             var sql = $"INSERT INTO {this.TableName} ( {string.Join(", ", targetColumns.Select(col => col.Name))} ) " 
                 + $"  VALUES ( {string.Join(", ", targetColumns.Select(col => col.GetSqlValue(colValues[col.Name])))} )";
 
-            if (this._db.Execute(sql) != 1)
+            if (this.Db.Execute(sql) != 1)
             {
                 return new Xb.Db.Model.Error[]
                 {
                     new Xb.Db.Model.Error("-"
                                         , "-"
-                                        , ErrorType.NotDefinedError
+                                        , Error.ErrorType.NotDefinedError
                                         , $"Insert failure：{sql}")
                 };
             }
@@ -668,7 +576,7 @@ namespace Xb.Db
                 {
                     new Xb.Db.Model.Error("-"
                                         , "-"
-                                        , ErrorType.NotDefinedError
+                                        , Error.ErrorType.NotDefinedError
                                         , "Key column not found")
                 };
             }
@@ -697,7 +605,7 @@ namespace Xb.Db
                 {
                     new Xb.Db.Model.Error("-"
                                         , "-"
-                                        , ErrorType.NotDefinedError
+                                        , Error.ErrorType.NotDefinedError
                                         , "update target value not found")
                 };
             }
@@ -705,7 +613,7 @@ namespace Xb.Db
             var sql = $" UPDATE {this.TableName} SET {string.Join(" , ", updates)} " 
                     + $" WHERE {string.Join(" AND ", wheres)}";
 
-            this._db.Execute(sql);
+            this.Db.Execute(sql);
 
             return new Db.Model.Error[] { };
         }
@@ -764,7 +672,7 @@ namespace Xb.Db
                 {
                     new Xb.Db.Model.Error("-"
                                         , "-"
-                                        , ErrorType.NotDefinedError
+                                        , Error.ErrorType.NotDefinedError
                                         , "key column not found")
                 };
             }
@@ -785,7 +693,7 @@ namespace Xb.Db
             }
 
             var sql = $"DELETE FROM {this.TableName} WHERE {string.Join(" AND ", wheres)}";
-            this._db.Execute(sql);
+            this.Db.Execute(sql);
 
             return new Db.Model.Error[] { };
         }
@@ -970,7 +878,7 @@ namespace Xb.Db
             {
                 if (disposing)
                 {
-                    this._db = null;
+                    this.Db = null;
                     this._templateTable = null;
 
                     if (this.PkeyColumns != null)
@@ -989,7 +897,6 @@ namespace Xb.Db
                     this.TableName = null;
                     this.Columns = null;
                     this.PkeyColumns = null;
-                    this.Encoding = null;
                 }
             }
         }
