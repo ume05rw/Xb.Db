@@ -7,12 +7,12 @@ using System.Runtime.InteropServices;
 // アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
 [assembly: AssemblyTitle("Xb.Db.MsSql")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Ready to Xamarin & .NET Core, Microsoft SQL Server Access Library.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Do-Be's")]
 [assembly: AssemblyProduct("Xb.Db.MsSql")]
-[assembly: AssemblyCopyright("Copyright (C)  2016")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("Copyright Do-Be's(C)  2016")]
+[assembly: AssemblyTrademark("Do-Be's")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("ja")]
 
