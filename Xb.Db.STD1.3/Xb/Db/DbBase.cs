@@ -65,6 +65,21 @@ namespace Xb.Db
         }
 
 
+        public class Structure
+        {
+            public string TABLE_NAME { get; set; }
+            public long COLUMN_INDEX { get; set; }
+            public string COLUMN_NAME { get; set; }
+            public string TYPE { get; set; }
+            public long CHAR_LENGTH { get; set; }
+            public long NUM_PREC { get; set; }
+            public long NUM_SCALE { get; set; }
+            public long IS_PRIMARY_KEY { get; set; }
+            public long IS_NULLABLE { get; set; }
+            public string COMMENT { get; set; }
+        }
+
+
         /// <summary>
         /// transaction begin command
         /// トランザクション開始SQLコマンド
@@ -160,7 +175,7 @@ namespace Xb.Db
         /// <value></value>
         /// <returns></returns>
         /// <remarks></remarks>
-        protected ResultTable StructureTable { get; set; }
+        protected Structure[] StructureTable { get; set; }
 
         /// <summary>
         /// Xb.Db.Model object of Tables
@@ -287,9 +302,8 @@ namespace Xb.Db
             foreach (var name in this.TableNames)
             {
                 var columns = this.StructureTable
-                                      .Rows
-                                      .Where(row => row["TABLE_NAME"].ToString() == name)
-                                      .ToArray();
+                                  .Where(row => row.TABLE_NAME == name)
+                                  .ToArray();
                 this.Models.Add(name, new Xb.Db.Model(this, columns));
             }
         }
@@ -863,7 +877,10 @@ namespace Xb.Db
                     this.Encoding = null;
                     this.TableNames = null;
 
-                    this.StructureTable?.Dispose();
+                    if(this.StructureTable != null)
+                        for(var i = 0; i < this.StructureTable.Length; i++)
+                            this.StructureTable[i] = null;
+
                     this.StructureTable = null;
 
                     try

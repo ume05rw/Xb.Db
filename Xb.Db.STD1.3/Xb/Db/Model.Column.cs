@@ -54,19 +54,19 @@ namespace Xb.Db
             /// Max charactor length
             /// 最大文字数
             /// </summary>
-            public int MaxLength { get; }
+            public long MaxLength { get; }
 
             /// <summary>
             /// Number of digits of Integer
             /// 整数桁数
             /// </summary>
-            public int MaxInteger { get; }
+            public long MaxInteger { get; }
 
             /// <summary>
             /// Number of digits of Decimal
             /// 少数桁数
             /// </summary>
-            public int MaxDecimal { get; }
+            public long MaxDecimal { get; }
 
             /// <summary>
             /// Column type

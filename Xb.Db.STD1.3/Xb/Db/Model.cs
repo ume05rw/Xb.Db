@@ -99,11 +99,10 @@ namespace Xb.Db
         /// <param name="tableInfo"></param>
         /// <remarks></remarks>
         public Model(Db.DbBase db
-                   , Xb.Db.ResultRow[] infoRows)
+                   , Xb.Db.DbBase.Structure[] infoRows)
         {
             if (infoRows == null
-                || infoRows.Length <= 0
-                || infoRows[0].Table.ColumnCount <= 0)
+                || infoRows.Length <= 0)
             {
                 Xb.Util.Out("Xb.Db.Model.New: Table infomation not found.");
                 throw new ArgumentException("Xb.Db.Model.New: Table infomation not found.");
@@ -112,14 +111,14 @@ namespace Xb.Db
             //get Xb.Db.DbBase ref.
             this.Db = db;
 
-            this.TableName = infoRows[0]["TABLE_NAME"].ToString();
+            this.TableName = infoRows[0].TABLE_NAME;
             this.Columns = new Xb.Db.Model.Column[infoRows.Length];
             var pkeyColumns = new List<Xb.Db.Model.Column>();
 
             //loop column count
             for (var i = 0; i < infoRows.Length; i++)
             {
-                var typeString = infoRows[i]["TYPE"].ToString().ToUpper();
+                var typeString = infoRows[i].TYPE.ToUpper();
                 var maxInteger = 0;
                 var maxDecimal = 0;
                 var maxLength = 0;
@@ -128,8 +127,8 @@ namespace Xb.Db
                 if (TypesOfNumber.Contains(typeString))
                 {
                     type = Column.ColumnType.Number;
-                    maxInteger = int.Parse(infoRows[i]["NUM_PREC"].ToString());
-                    maxDecimal = int.Parse(infoRows[i]["NUM_SCALE"].ToString());
+                    maxInteger = (int)infoRows[i].NUM_PREC;
+                    maxDecimal = (int)infoRows[i].NUM_SCALE;
                     maxInteger -= maxDecimal;
                     maxLength = maxInteger
                                 + maxDecimal
@@ -142,10 +141,7 @@ namespace Xb.Db
                     type = Column.ColumnType.String;
 
                     //TODO: MySQL-LongText型のような巨大なテキスト型のとき、文字数制限をしないようにする。
-                    if (!int.TryParse(infoRows[i]["CHAR_LENGTH"].ToString(), out maxLength))
-                    {
-                        maxLength = int.MaxValue;
-                    }
+                    maxLength = (int)infoRows[i].CHAR_LENGTH;
                     maxInteger = -1;
                     maxDecimal = -1;
 
@@ -166,12 +162,10 @@ namespace Xb.Db
                     maxDecimal = -1;
                 }
 
-                var isPkey = (infoRows[i]["IS_PRIMARY_KEY"].ToString() == "1");
+                var isPkey = (infoRows[i].IS_PRIMARY_KEY == 1);
+                var nullable = (infoRows[i].IS_NULLABLE == 1);
 
-                //DataTable上の型都合で、"1"と"true"と2種類取れてしまうため、整形する。
-                var nullable = (infoRows[i]["IS_NULLABLE"].ToString().ToLower().Replace("true", "1") == "1");
-
-                this.Columns[i] = new Xb.Db.Model.Column(infoRows[i]["COLUMN_NAME"].ToString()
+                this.Columns[i] = new Xb.Db.Model.Column(infoRows[i].COLUMN_NAME
                                                         , maxLength
                                                         , maxInteger
                                                         , maxDecimal
