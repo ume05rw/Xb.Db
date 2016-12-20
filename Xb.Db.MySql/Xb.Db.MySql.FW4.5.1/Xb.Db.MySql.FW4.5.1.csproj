@@ -51,16 +51,18 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Transactions" />
-    <Reference Include="Xb.Core, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xb.Core.1.0.5\lib\net45\Xb.Core.dll</HintPath>
+    <Reference Include="Xb.Core, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Xb.Core.1.0.6\lib\net45\Xb.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xb.Db.MySql.CR1.0\Xb\Db\MySql.cs">
+    <Compile Include="..\Xb.Db.MySql.STD1.3\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Xb.Db.MySql.STD1.3\Xb\Db\MySql.cs">
       <Link>Xb\Db\MySql.cs</Link>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Xb.Db\Xb.Db.FW4.5.1\Xb.Db.FW4.5.1.csproj">

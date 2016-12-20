@@ -60,8 +60,8 @@
     </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
-    <Reference Include="Xb.Core, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xb.Core.1.0.5\lib\net45\Xb.Core.dll</HintPath>
+    <Reference Include="Xb.Core, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Xb.Core.1.0.6\lib\net45\Xb.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -94,9 +94,9 @@
       <Project>{e934d179-93cc-4890-86f6-2827d2d5cd61}</Project>
       <Name>Xb.Db.STD1.3</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xb.Db.MySql.FW4.5.1\Xb.Db.MySql.FW4.5.1.csproj">
-      <Project>{1cc667ae-6fc9-4af6-a5de-a60689443445}</Project>
-      <Name>Xb.Db.MySql.FW4.5.1</Name>
+    <ProjectReference Include="..\Xb.Db.MySql.STD1.3\Xb.Db.MySql.STD1.3.csproj">
+      <Project>{c17f4789-6279-45cb-9f92-fc256542462c}</Project>
+      <Name>Xb.Db.MySql.STD1.3</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
