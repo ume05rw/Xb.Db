@@ -259,13 +259,13 @@ namespace Xb.Db
                 if (this.Type == ColumnType.String)
                 {
                     //Quote if string
-                    return Xb.Str.SqlQuote(value.ToString());
+                    return this.Model.Db.Quote(value.ToString());
                 }
                 else if (this.Type == ColumnType.DateTime)
                 {
                     //Format and Quote if datetime
                     DateTime tmpDate = DateTime.Parse(value.ToString());
-                    return Xb.Str.SqlQuote(tmpDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                    return this.Model.Db.Quote(tmpDate.ToString("yyyy-MM-dd HH:mm:ss"));
                 }
 
                 //remove comma if Number

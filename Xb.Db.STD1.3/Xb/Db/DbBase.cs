@@ -108,7 +108,7 @@ namespace Xb.Db
         /// Connection
         /// DBコネクション
         /// </summary>
-        protected DbConnection Connection { get; set; }
+        public DbConnection Connection { get; protected set; }
         
         /// <summary>
         /// Hostname(or IpAddress)
@@ -216,6 +216,7 @@ namespace Xb.Db
             this.User = user;
             this.Password = password;
             this.AdditionalConnectionString = additionalString;
+
             this.Encoding = System.Text.Encoding.UTF8;
             this.StringSizeCriteria = StringSizeCriteriaType.Byte;
 
@@ -245,7 +246,14 @@ namespace Xb.Db
                        , string name
                        , bool isBuildModels = true)
         {
+            this.Connection = connection;
+
+            this.Address = "";
             this.Name = name;
+            this.User = "";
+            this.Password = "";
+            this.AdditionalConnectionString = "";
+
             this.Encoding = System.Text.Encoding.UTF8;
             this.StringSizeCriteria = StringSizeCriteriaType.Byte;
 
