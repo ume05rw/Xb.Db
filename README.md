@@ -1,4 +1,4 @@
-Xb.Core
+Xb.Db
 ====
 
 Ready to Xamarin & .NET Core, Base-Library for Database Access
