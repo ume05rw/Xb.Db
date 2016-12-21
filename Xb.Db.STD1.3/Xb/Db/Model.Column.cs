@@ -54,19 +54,19 @@ namespace Xb.Db
             /// Max charactor length
             /// 最大文字数
             /// </summary>
-            public long MaxLength { get; }
+            public long MaxLength { get; set; }
 
             /// <summary>
             /// Number of digits of Integer
             /// 整数桁数
             /// </summary>
-            public long MaxInteger { get; }
+            public long MaxInteger { get; set; }
 
             /// <summary>
             /// Number of digits of Decimal
             /// 少数桁数
             /// </summary>
-            public long MaxDecimal { get; }
+            public long MaxDecimal { get; set; }
 
             /// <summary>
             /// Column type
@@ -84,19 +84,13 @@ namespace Xb.Db
             /// Nullable flag
             /// Nullを許可するか否か
             /// </summary>
-            public bool IsNullable { get; }
+            public bool IsNullable { get; set; }
 
             /// <summary>
             /// Belinging Xb.Db.Model
             /// 所属元Xb.Db.Model
             /// </summary>
             protected Xb.Db.Model Model { get; set; }
-
-            ///// <summary>
-            ///// String encoding
-            ///// 文字列値のときのエンコード形式
-            ///// </summary>
-            //public System.Text.Encoding Encoding { get; set; }
 
 
             /// <summary>
@@ -186,9 +180,7 @@ namespace Xb.Db
                         //castable value
                         decimal valDec = default(decimal);
                         if (!decimal.TryParse(valueString, out valDec))
-                        {
                             return Error.ErrorType.NotNumber;
-                        }
 
                         //switch exist decimal point
                         if (valueString.IndexOf('.') == -1)
@@ -196,24 +188,19 @@ namespace Xb.Db
                             //Integer
                             //Integer length
                             if (System.Math.Abs(valDec).ToString().Length > this.MaxInteger)
-                            {
                                 return Error.ErrorType.IntegerOver;
-                            }
                         }
                         else
                         {
                             //has Decimal
                             //Integer length
-                            var intString = ((int)Math.Floor(Math.Abs(valDec))).ToString();
+                            var intString = ((long)Math.Floor(Math.Abs(valDec))).ToString();
                             if (intString.Length > this.MaxInteger)
-                            {
                                 return Error.ErrorType.IntegerOver;
-                            }
+
                             //decimal length
                             if (valueString.Substring(valueString.IndexOf('.')).Length - 1 > this.MaxDecimal)
-                            {
                                 return Error.ErrorType.DecimalOver;
-                            }
                         }
                         break;
 
@@ -221,9 +208,8 @@ namespace Xb.Db
 
                         DateTime tmpDate = default(DateTime);
                         if (!DateTime.TryParse(valueString, out tmpDate))
-                        {
                             return Error.ErrorType.NotDateTime;
-                        }
+
                         break;
 
                     case ColumnType.Others:
