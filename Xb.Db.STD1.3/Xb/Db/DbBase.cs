@@ -242,6 +242,9 @@ namespace Xb.Db
         /// <param name="connection"></param>
         /// <param name="name"></param>
         /// <param name="isBuildModels"></param>
+        /// <remarks>
+        /// `name`渡し値は、DBによってはテーブル構造取得時に必要になる。
+        /// </remarks>
         protected DbBase(DbConnection connection
                        , string name
                        , bool isBuildModels = true)
