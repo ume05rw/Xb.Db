@@ -71,6 +71,19 @@ namespace Xb.Db
             return this._columnNameIndexes[columnName];
         }
 
+        public Dictionary<string, object>[] GetSerializable()
+        {
+            var result = new Dictionary<string, object>[this.RowCount];
+            for (var i = 0; i < this.RowCount; i++)
+            {
+                result[i] = new Dictionary<string, object>();
+                for (var j = 0; j < this.ColumnCount; j++)
+                    result[i].Add(this.ColumnNames[j], this.Rows[i][j]);
+            }
+
+            return result;
+        }
+
 
         public ResultRow NewRow()
         {

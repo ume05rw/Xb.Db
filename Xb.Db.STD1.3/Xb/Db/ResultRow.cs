@@ -53,7 +53,6 @@ namespace Xb.Db
             dataRecord?.GetValues(this._items);
         }
 
-
         public void Dispose()
         {
             if (this._items != null)
