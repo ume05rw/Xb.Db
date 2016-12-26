@@ -193,14 +193,6 @@ Namespace and Methods are...
                   Update the difference of new-rows and old-rows on async
 
 
-## Contribution
-1. Fork it ( https://github.com/ume05rw/Xb.Db/fork )
-2. Create your feature branch (git checkout -b my-new-feature)
-3. Commit your changes (git commit -am 'Add some feature')
-4. Push to the branch (git push origin my-new-feature)
-5. Create new Pull Request
-
-
 ## Licence
 
 [MIT Licence](https://github.com/ume05rw/Xb.Db/blob/master/LICENSE)
