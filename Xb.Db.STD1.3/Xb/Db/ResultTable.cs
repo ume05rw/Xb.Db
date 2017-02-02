@@ -10,8 +10,6 @@ namespace Xb.Db
 {
     public class ResultTable : IDisposable
     {
-        //public ReadOnlyCollection<DbColumn> Columns { get; private set; }
-
         public string[] ColumnNames { get; private set; }
         public List<ResultRow> Rows { get; private set; }
         public int ColumnCount { get; private set; }
@@ -38,10 +36,6 @@ namespace Xb.Db
             }
             
             this.ColumnNames = colNames.ToArray();
-
-            //Columns
-            //this.Columns = reader.GetColumnSchema();
-
             
             this.ColumnCount = this.ColumnNames.Length;
 
@@ -53,19 +47,7 @@ namespace Xb.Db
             this.RowCount = this.Rows.Count;
         }
 
-
-        //public DbColumn Column(int index)
-        //{
-        //    return this.Columns[index];
-        //}
-
-
-        //public DbColumn Column(string columnName)
-        //{
-        //    return this.Columns[this.GetColumnIndex(columnName)];
-        //}
-
-
+        
         public int GetColumnIndex(string columnName)
         {
             return this._columnNameIndexes[columnName];
@@ -98,8 +80,6 @@ namespace Xb.Db
             this.Rows = null;
             this._columnNameIndexes = null;
             this.ColumnNames = null;
-
-            //this.Columns = null;
         }
     }
 }

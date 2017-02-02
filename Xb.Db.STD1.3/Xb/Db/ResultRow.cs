@@ -53,6 +53,31 @@ namespace Xb.Db
             dataRecord?.GetValues(this._items);
         }
 
+
+        /// <summary>
+        /// 指定の型で値を取得する。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public T Get<T>(string columnName)
+        {
+            return (T)Convert.ChangeType(this[columnName], typeof(T));
+        }
+
+
+        /// <summary>
+        /// 指定の型で値を取得する。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public T Get<T>(int index)
+        {
+            return (T)Convert.ChangeType(this[index], typeof(T));
+        }
+
+
         public void Dispose()
         {
             if (this._items != null)
