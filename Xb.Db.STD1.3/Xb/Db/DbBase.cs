@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Xb.Db
@@ -185,6 +186,12 @@ namespace Xb.Db
 
 
         /// <summary>
+        /// Busy flag, countermeasure for multi-execution in multi-threading
+        /// ビジーフラグ - マルチスレッド時の多重実行抑制用
+        /// </summary>
+        private bool _isBusy = false;
+
+        /// <summary>
         /// Constructor(dummy)
         /// コンストラクタ(ダミー)
         /// </summary>
@@ -219,6 +226,7 @@ namespace Xb.Db
 
             this.Encoding = System.Text.Encoding.UTF8;
             this.StringSizeCriteria = StringSizeCriteriaType.Byte;
+            this._isBusy = false;
 
             //Connect
             this.Open();
@@ -256,6 +264,7 @@ namespace Xb.Db
             this.User = "";
             this.Password = "";
             this.AdditionalConnectionString = "";
+            this._isBusy = false;
 
             this.Encoding = System.Text.Encoding.UTF8;
             this.StringSizeCriteria = StringSizeCriteriaType.Byte;
@@ -373,15 +382,27 @@ namespace Xb.Db
         {
             try
             {
+                if (this._isBusy)
+                {
+                    return Task.Delay(500)
+                               .ContinueWith(t => this.Execute(sql, parameters))
+                               .GetAwaiter()
+                               .GetResult();
+                }
+                this._isBusy = true;
+                
                 var command = this.GetCommand(parameters);
                 command.CommandText = sql;
                 var result = command.ExecuteNonQuery();
                 command.Dispose();
 
+                this._isBusy = false;
+
                 return result;
             }
             catch (Exception ex)
             {
+                this._isBusy = false;
                 Xb.Util.Out(ex);
                 throw new ArgumentException("Xb.Db.DbBase.Execute: failure \r\n" + ex.Message + "\r\n" + sql);
             }
@@ -419,6 +440,15 @@ namespace Xb.Db
         {
             try
             {
+                if (this._isBusy)
+                {
+                    return Task.Delay(500)
+                               .ContinueWith(t => this.GetReader(sql, parameters))
+                               .GetAwaiter()
+                               .GetResult();
+                }
+                this._isBusy = true;
+
                 var command = this.GetCommand(parameters);
                 command.CommandText = sql;
                 var result = command.ExecuteReader(CommandBehavior.SingleResult);
@@ -427,10 +457,13 @@ namespace Xb.Db
                 //command.Dispose();
                 command = null;
 
+                this._isBusy = false;
+
                 return result;
             }
             catch (Exception ex)
             {
+                this._isBusy = false;
                 Xb.Util.Out(ex);
                 throw new Exception("Xb.Db.DbBase.GetReader: failure \r\n" + ex.Message + "\r\n" + sql);
             }
@@ -468,16 +501,29 @@ namespace Xb.Db
         {
             try
             {
+                if (this._isBusy)
+                {
+                    return Task.Delay(500)
+                               .ContinueWith(t => this.Query(sql, parameters))
+                               .GetAwaiter()
+                               .GetResult();
+                }
+                this._isBusy = true;
+
                 var command = this.GetCommand(parameters);
                 command.CommandText = sql;
                 var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
                 var result = new ResultTable(reader);
                 reader.Dispose();
                 command.Dispose();
+
+                this._isBusy = false;
+
                 return result;
             }
             catch (Exception ex)
             {
+                this._isBusy = false;
                 Xb.Util.Out(ex);
                 throw new Exception("Xb.Db.DbBase.Query: failure \r\n" + ex.Message + "\r\n" + sql);
             }
@@ -516,9 +562,21 @@ namespace Xb.Db
         {
             try
             {
+                if (this._isBusy)
+                {
+                    return Task.Delay(500)
+                               .ContinueWith(t => this.Query<T>(sql, parameters))
+                               .GetAwaiter()
+                               .GetResult();
+                }
+
                 var result = new List<T>();
                 var props = typeof(T).GetRuntimeProperties().ToArray();
+
+                //GetReaderでビジーフラグを参照する。この直後に再度、ビジーフラグON。
                 var reader = this.GetReader(sql, parameters);
+                this._isBusy = true;
+
 
                 var done = false;
                 var matchProps = new List<PropertyInfo>();
@@ -543,10 +601,14 @@ namespace Xb.Db
                 }
 
                 reader.Dispose();
+
+                this._isBusy = false;
+
                 return result.ToArray();
             }
             catch (Exception ex)
             {
+                this._isBusy = false;
                 Xb.Util.Out(ex);
                 throw new Exception("Xb.Db.DbBase.Query<T>: failure \r\n" + ex.Message + "\r\n" + sql);
             }
