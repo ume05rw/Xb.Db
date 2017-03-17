@@ -14,7 +14,7 @@ namespace Xb.Db
     /// Database Connection Manager Base Class
     /// データベース接続基底クラス
     /// </summary>
-    public class DbBase : IDisposable
+    public abstract class DbBase : IDisposable
     {
         /// <summary>
         /// String-Column size type
@@ -110,7 +110,7 @@ namespace Xb.Db
         /// DBコネクション
         /// </summary>
         public DbConnection Connection { get; protected set; }
-        
+
         /// <summary>
         /// Hostname(or IpAddress)
         /// 接続先アドレス(orサーバホスト名)
@@ -186,10 +186,14 @@ namespace Xb.Db
 
 
         /// <summary>
-        /// Busy flag, countermeasure for multi-execution in multi-threading
-        /// ビジーフラグ - マルチスレッド時の多重実行抑制用
+        /// 排他ロック制御用
         /// </summary>
-        private bool _isBusy = false;
+        private class Locker
+        {
+            public bool Locked { get; set; } = false;
+        }
+
+        private Locker _locker;
 
         /// <summary>
         /// Constructor(dummy)
@@ -212,11 +216,11 @@ namespace Xb.Db
         /// <param name="additionalString"></param>
         /// <param name="isBuildModels"></param>
         protected DbBase(string name
-                       , string user = ""
-                       , string password = ""
-                       , string address = ""
-                       , string additionalString = ""
-                       , bool isBuildModels = true)
+            , string user = ""
+            , string password = ""
+            , string address = ""
+            , string additionalString = ""
+            , bool isBuildModels = true)
         {
             this.Address = address;
             this.Name = name;
@@ -226,7 +230,7 @@ namespace Xb.Db
 
             this.Encoding = System.Text.Encoding.UTF8;
             this.StringSizeCriteria = StringSizeCriteriaType.Byte;
-            this._isBusy = false;
+            this._locker = new Locker();
 
             //Connect
             this.Open();
@@ -254,8 +258,8 @@ namespace Xb.Db
         /// `name`渡し値は、DBによってはテーブル構造取得時に必要になる。
         /// </remarks>
         protected DbBase(DbConnection connection
-                       , string name
-                       , bool isBuildModels = true)
+            , string name
+            , bool isBuildModels = true)
         {
             this.Connection = connection;
 
@@ -264,7 +268,7 @@ namespace Xb.Db
             this.User = "";
             this.Password = "";
             this.AdditionalConnectionString = "";
-            this._isBusy = false;
+            this._locker = new Locker();
 
             this.Encoding = System.Text.Encoding.UTF8;
             this.StringSizeCriteria = StringSizeCriteriaType.Byte;
@@ -322,8 +326,8 @@ namespace Xb.Db
             foreach (var name in this.TableNames)
             {
                 var columns = this.StructureTable
-                                  .Where(row => row.TABLE_NAME == name)
-                                  .ToArray();
+                    .Where(row => row.TABLE_NAME == name)
+                    .ToArray();
                 this.Models.Add(name, new Xb.Db.Model(this, columns));
             }
         }
@@ -336,7 +340,7 @@ namespace Xb.Db
         /// <param name="text"></param>
         /// <returns></returns>
         public virtual string Quote(string text
-                                  , LikeMarkPosition likeMarkPos = LikeMarkPosition.None)
+            , LikeMarkPosition likeMarkPos = LikeMarkPosition.None)
         {
             switch (likeMarkPos)
             {
@@ -364,11 +368,7 @@ namespace Xb.Db
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        protected virtual DbCommand GetCommand(DbParameter[] parameters = null)
-        {
-            Xb.Util.Out("Xb.Db.GetCommand: Execute only subclass");
-            throw new InvalidOperationException("Xb.Db.GetCommand: Execute only subclass");
-        }
+        protected abstract DbCommand GetCommand(DbParameter[] parameters = null);
 
 
         /// <summary>
@@ -380,31 +380,28 @@ namespace Xb.Db
         /// <returns></returns>
         public int Execute(string sql, DbParameter[] parameters = null)
         {
-            try
+            lock (this._locker)
             {
-                if (this._isBusy)
+                try
                 {
-                    return Task.Delay(500)
-                               .ContinueWith(t => this.Execute(sql, parameters))
-                               .GetAwaiter()
-                               .GetResult();
+                    this._locker.Locked = true;
+
+                    var command = this.GetCommand(parameters);
+                    command.CommandText = sql;
+                    var result = command.ExecuteNonQuery();
+                    command.Dispose();
+
+                    return result;
                 }
-                this._isBusy = true;
-                
-                var command = this.GetCommand(parameters);
-                command.CommandText = sql;
-                var result = command.ExecuteNonQuery();
-                command.Dispose();
-
-                this._isBusy = false;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                this._isBusy = false;
-                Xb.Util.Out(ex);
-                throw new ArgumentException("Xb.Db.DbBase.Execute: failure \r\n" + ex.Message + "\r\n" + sql);
+                catch (Exception ex)
+                {
+                    Xb.Util.Out(ex);
+                    throw new ArgumentException("Xb.Db.DbBase.Execute: failure \r\n" + ex.Message + "\r\n" + sql);
+                }
+                finally
+                {
+                    this._locker.Locked = false;
+                }
             }
         }
 
@@ -423,7 +420,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 result = this.Execute(sql, parameters);
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -438,34 +435,31 @@ namespace Xb.Db
         /// <returns></returns>
         public DbDataReader GetReader(string sql, DbParameter[] parameters = null)
         {
-            try
+            lock (this._locker)
             {
-                if (this._isBusy)
+                try
                 {
-                    return Task.Delay(500)
-                               .ContinueWith(t => this.GetReader(sql, parameters))
-                               .GetAwaiter()
-                               .GetResult();
+                    this._locker.Locked = true;
+
+                    var command = this.GetCommand(parameters);
+                    command.CommandText = sql;
+                    var result = command.ExecuteReader(CommandBehavior.SingleResult);
+
+                    //DO-NOT Dispose. dispose command, reader will be closed.
+                    //command.Dispose();
+                    command = null;
+
+                    return result;
                 }
-                this._isBusy = true;
-
-                var command = this.GetCommand(parameters);
-                command.CommandText = sql;
-                var result = command.ExecuteReader(CommandBehavior.SingleResult);
-
-                //DO-NOT Dispose. dispose command, reader will be closed.
-                //command.Dispose();
-                command = null;
-
-                this._isBusy = false;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                this._isBusy = false;
-                Xb.Util.Out(ex);
-                throw new Exception("Xb.Db.DbBase.GetReader: failure \r\n" + ex.Message + "\r\n" + sql);
+                catch (Exception ex)
+                {
+                    Xb.Util.Out(ex);
+                    throw new Exception("Xb.Db.DbBase.GetReader: failure \r\n" + ex.Message + "\r\n" + sql);
+                }
+                finally
+                {
+                    this._locker.Locked = false;
+                }
             }
         }
 
@@ -484,7 +478,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 result = this.GetReader(sql, parameters);
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -499,33 +493,30 @@ namespace Xb.Db
         /// <remarks></remarks>
         public ResultTable Query(string sql, DbParameter[] parameters = null)
         {
-            try
+            lock (this._locker)
             {
-                if (this._isBusy)
+                try
                 {
-                    return Task.Delay(500)
-                               .ContinueWith(t => this.Query(sql, parameters))
-                               .GetAwaiter()
-                               .GetResult();
+                    this._locker.Locked = true;
+
+                    var command = this.GetCommand(parameters);
+                    command.CommandText = sql;
+                    var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+                    var result = new ResultTable(reader);
+                    reader.Dispose();
+                    command.Dispose();
+
+                    return result;
                 }
-                this._isBusy = true;
-
-                var command = this.GetCommand(parameters);
-                command.CommandText = sql;
-                var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
-                var result = new ResultTable(reader);
-                reader.Dispose();
-                command.Dispose();
-
-                this._isBusy = false;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                this._isBusy = false;
-                Xb.Util.Out(ex);
-                throw new Exception("Xb.Db.DbBase.Query: failure \r\n" + ex.Message + "\r\n" + sql);
+                catch (Exception ex)
+                {
+                    Xb.Util.Out(ex);
+                    throw new Exception("Xb.Db.DbBase.Query: failure \r\n" + ex.Message + "\r\n" + sql);
+                }
+                finally
+                {
+                    this._locker.Locked = false;
+                }
             }
         }
 
@@ -544,7 +535,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 result = this.Query(sql, parameters);
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -562,56 +553,60 @@ namespace Xb.Db
         {
             try
             {
-                if (this._isBusy)
-                {
-                    return Task.Delay(500)
-                               .ContinueWith(t => this.Query<T>(sql, parameters))
-                               .GetAwaiter()
-                               .GetResult();
-                }
-
                 var result = new List<T>();
                 var props = typeof(T).GetRuntimeProperties().ToArray();
 
-                //GetReaderでビジーフラグを参照する。この直後に再度、ビジーフラグON。
+                //GetReaderでロックを取得するため、ここでのロック取得を遅らせる。
                 var reader = this.GetReader(sql, parameters);
-                this._isBusy = true;
 
-
-                var done = false;
-                var matchProps = new List<PropertyInfo>();
-
-                while (reader.Read())
+                lock (this._locker)
                 {
-                    if (!done)
+                    try
                     {
-                        var columnNames = new List<string>();
-                        for (var i = 0; i < reader.FieldCount; i++)
-                            columnNames.Add(reader.GetName(i));
+                        this._locker.Locked = true;
 
-                        matchProps.AddRange(props.Where(prop => columnNames.Contains(prop.Name)));
-                        done = true;
+                        var done = false;
+                        var matchProps = new List<PropertyInfo>();
+
+                        while (reader.Read())
+                        {
+                            if (!done)
+                            {
+                                var columnNames = new List<string>();
+                                for (var i = 0; i < reader.FieldCount; i++)
+                                    columnNames.Add(reader.GetName(i));
+
+                                matchProps.AddRange(props.Where(prop => columnNames.Contains(prop.Name)));
+                                done = true;
+                            }
+
+                            var row = Activator.CreateInstance<T>();
+                            foreach (var property in matchProps)
+                                property.SetValue(row, reader[property.Name]);
+
+                            result.Add(row);
+                        }
+
+                        reader.Dispose();
+
+                        return result.ToArray();
+
                     }
-
-                    var row = Activator.CreateInstance<T>();
-                    foreach (var property in matchProps)
-                        property.SetValue(row, reader[property.Name]);
-
-                    result.Add(row);
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        this._locker.Locked = false;
+                    }
                 }
-
-                reader.Dispose();
-
-                this._isBusy = false;
-
-                return result.ToArray();
             }
             catch (Exception ex)
             {
-                this._isBusy = false;
                 Xb.Util.Out(ex);
                 throw new Exception("Xb.Db.DbBase.Query<T>: failure \r\n" + ex.Message + "\r\n" + sql);
-            }
+            }            
         }
 
 
@@ -630,7 +625,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 result = this.Query<T>(sql, parameters);
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -676,7 +671,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 result = this.Find(tableName, whereString);
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -728,7 +723,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 result = this.FindAll(tableName, whereString, orderString);
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -774,7 +769,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 this.BeginTransaction();
-            });
+            }).ConfigureAwait(false);
         }
 
 
@@ -816,7 +811,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 this.CommitTransaction();
-            });
+            }).ConfigureAwait(false);
         }
 
 
@@ -858,7 +853,7 @@ namespace Xb.Db
             await Task.Run(() =>
             {
                 this.RollbackTransaction();
-            });
+            }).ConfigureAwait(false);
         }
 
 
