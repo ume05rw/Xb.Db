@@ -196,12 +196,10 @@ namespace Xb.Db
         private Locker _locker;
 
         /// <summary>
-        /// Constructor(dummy)
-        /// コンストラクタ(ダミー)
+        /// Constructor
         /// </summary>
         public DbBase()
         {
-            throw new InvalidOperationException("Xb.Db.DbBase.Constructor: Not permitted");
         }
 
 
