@@ -50,25 +50,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xb.Db.STD1.3\Properties\AssemblyInfo.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Xb.Db.STD1.3\Xb\Db\DbBase.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Xb\Db\DbBase.cs">
       <Link>Xb\Db\DbBase.cs</Link>
     </Compile>
-    <Compile Include="..\Xb.Db.STD1.3\Xb\Db\Model.Column.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Xb\Db\Model.Column.cs">
       <Link>Xb\Db\Model.Column.cs</Link>
     </Compile>
-    <Compile Include="..\Xb.Db.STD1.3\Xb\Db\Model.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Xb\Db\Model.cs">
       <Link>Xb\Db\Model.cs</Link>
     </Compile>
-    <Compile Include="..\Xb.Db.STD1.3\Xb\Db\Model.Error.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Xb\Db\Model.Error.cs">
       <Link>Xb\Db\Model.Error.cs</Link>
     </Compile>
-    <Compile Include="..\Xb.Db.STD1.3\Xb\Db\ResultRow.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Xb\Db\ResultRow.cs">
       <Link>Xb\Db\ResultRow.cs</Link>
     </Compile>
-    <Compile Include="..\Xb.Db.STD1.3\Xb\Db\ResultTable.cs">
+    <Compile Include="..\Xb.Db.STD1.6\Xb\Db\ResultTable.cs">
       <Link>Xb\Db\ResultTable.cs</Link>
     </Compile>
   </ItemGroup>
