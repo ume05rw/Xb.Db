@@ -166,7 +166,8 @@ namespace Xb.Db
 
                             case DbBase.StringSizeCriteriaType.Length:
 
-                                if(valueString.Length > this.MaxLength)
+                                if(this.MaxLength != -1 
+                                   && valueString.Length > this.MaxLength)
                                     return Error.ErrorType.LengthOver;
 
                                 break;

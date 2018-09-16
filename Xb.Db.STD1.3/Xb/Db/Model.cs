@@ -479,12 +479,26 @@ namespace Xb.Db
 
             var targetColumns = this.Columns
                                     .Where(col => row.Table.ColumnNames.Contains(col.Name))
+                                    .Where(col => !(col.IsPrimaryKey && col.IsNullable && colValues[col.Name] == ""))
                                     .ToList();
 
             var sql = $"INSERT INTO {this.TableName} ( {string.Join(", ", targetColumns.Select(col => col.Name))} ) " 
                 + $"  VALUES ( {string.Join(", ", targetColumns.Select(col => col.GetSqlValue(colValues[col.Name])))} )";
 
-            if (this.Db.Execute(sql) != 1)
+            try
+            {
+                if (this.Db.Execute(sql) != 1)
+                {
+                    return new Xb.Db.Model.Error[]
+                    {
+                    new Xb.Db.Model.Error("-"
+                                        , "-"
+                                        , Error.ErrorType.NotDefinedError
+                                        , $"Insert failure：{sql}")
+                    };
+                }
+            }
+            catch (Exception)
             {
                 return new Xb.Db.Model.Error[]
                 {
@@ -494,6 +508,7 @@ namespace Xb.Db
                                         , $"Insert failure：{sql}")
                 };
             }
+
             return new Db.Model.Error[] { };
         }
 
@@ -597,7 +612,20 @@ namespace Xb.Db
             var sql = $" UPDATE {this.TableName} SET {string.Join(" , ", updates)} " 
                     + $" WHERE {string.Join(" AND ", wheres)}";
 
-            this.Db.Execute(sql);
+            try
+            {
+                this.Db.Execute(sql);
+            }
+            catch (Exception)
+            {
+                return new Xb.Db.Model.Error[]
+                {
+                    new Xb.Db.Model.Error("-"
+                                        , "-"
+                                        , Error.ErrorType.NotDefinedError
+                                        , $"Update failure：{sql}")
+                };
+            }
 
             return new Db.Model.Error[] { };
         }
